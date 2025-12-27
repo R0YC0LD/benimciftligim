@@ -5,228 +5,203 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#2d3436">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Pou: Ultimate Life v3</title>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Pou: Ultimate Final</title>
     <style>
         /* =========================================
-           1. CORE STYLES
+           1. CORE & RESET & RESPONSIVE
            ========================================= */
         :root {
+            --primary: #f1c40f;
+            --accent: #e67e22;
+            --bg-bedroom: #a29bfe;
+            --bg-hall: #fdcb6e;
+            --bg-kitchen: #ffeaa7;
+            --bg-bathroom: #81ecec;
+            --bg-gameroom: #ff7675;
+            --ui-bg: rgba(255, 255, 255, 0.9);
             --font: 'Segoe UI', system-ui, sans-serif;
             --safe-bottom: env(safe-area-inset-bottom, 20px);
         }
+
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+        
         body {
             margin: 0; padding: 0; width: 100vw; height: 100dvh;
-            overflow: hidden; background: #222; font-family: var(--font);
-            touch-action: none;
+            overflow: hidden; font-family: var(--font);
+            background: #222; touch-action: none;
         }
 
         /* =========================================
-           2. ROOMS & BACKGROUNDS
+           2. WORLD & ROOMS
            ========================================= */
         #world-track {
             display: flex; width: 500vw; height: 100%;
-            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            will-change: transform;
         }
+
         .room {
             width: 100vw; height: 100%; position: relative;
-            display: flex; flex-direction: column; align-items: center;
-            border-right: 2px solid rgba(0,0,0,0.1);
+            overflow: hidden; display: flex; flex-direction: column; align-items: center;
         }
 
-        /* ODA 0: YATAK ODASI (Mavi & Yıldızlar) */
-        .room-0 {
-            background-color: #6c5ce7;
-            background-image: radial-gradient(white 2px, transparent 2px);
-            background-size: 40px 40px;
-        }
-        .room-0::after { /* Zemin */
-            content: ''; position: absolute; bottom: 0; width: 100%; height: 35%;
-            background: #a29bfe; border-top: 15px solid #4834d4;
+        /* Arka Plan Desenleri */
+        .room-0 { background: var(--bg-bedroom); background-image: radial-gradient(#fff 2px, transparent 2px); background-size: 40px 40px; }
+        .room-1 { background: var(--bg-hall); background-image: linear-gradient(90deg, rgba(255,255,255,0.2) 50%, transparent 50%); background-size: 80px 100%; }
+        .room-2 { background: var(--bg-kitchen); background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.2) 10px, rgba(255,255,255,0.2) 20px); }
+        .room-3 { background: var(--bg-bathroom); background-image: linear-gradient(rgba(255,255,255,0.3) 2px, transparent 2px), linear-gradient(90deg, rgba(255,255,255,0.3) 2px, transparent 2px); background-size: 50px 50px; }
+        .room-4 { background: var(--bg-gameroom); background-image: radial-gradient(circle, rgba(0,0,0,0.1) 20%, transparent 20%); background-size: 30px 30px; }
+
+        .room-label {
+            position: absolute; top: 12%; font-size: clamp(2rem, 5vw, 4rem); 
+            font-weight: 900; color: rgba(0,0,0,0.1); text-transform: uppercase; letter-spacing: 5px; pointer-events: none;
         }
 
-        /* ODA 1: SALON (Sarı & Çizgili) */
-        .room-1 {
-            background-color: #f1c40f;
-            background-image: linear-gradient(90deg, rgba(255,255,255,0.3) 50%, transparent 50%);
-            background-size: 60px 100%;
-        }
-        .room-1::after { /* Parke */
-            content: ''; position: absolute; bottom: 0; width: 100%; height: 30%;
-            background: #d35400; border-top: 15px solid #e67e22;
-        }
-
-        /* ODA 2: MUTFAK (Pembe & Kareli) */
-        .room-2 {
-            background-color: #ff7675;
-            background-image: linear-gradient(rgba(255,255,255,0.3) 2px, transparent 2px),
-                              linear-gradient(90deg, rgba(255,255,255,0.3) 2px, transparent 2px);
-            background-size: 50px 50px;
-        }
-        .room-2::after { /* Fayans Zemin */
-            content: ''; position: absolute; bottom: 0; width: 100%; height: 35%;
-            background: #fff;
-            background-image: linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%), 
-                              linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%);
-            background-position: 0 0, 20px 20px; background-size: 40px 40px;
-            border-top: 15px solid #d63031;
-        }
-
-        /* ODA 3: BANYO (Turkuaz Fayans) */
-        .room-3 {
-            background-color: #81ecec;
-            background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.3) 10px, rgba(255,255,255,0.3) 20px);
-        }
-        .room-3::after { /* Parlak Zemin */
-            content: ''; position: absolute; bottom: 0; width: 100%; height: 30%;
-            background: #00cec9; border-top: 15px solid #fff;
-        }
-
-        /* ODA 4: OYUN ODASI (Koyu & Neon) */
-        .room-4 {
-            background-color: #2d3436;
-            background-image: radial-gradient(#00b894 3px, transparent 3px);
-            background-size: 30px 30px;
-        }
-        .room-4::after {
-            content: ''; position: absolute; bottom: 0; width: 100%; height: 30%;
-            background: #000; border-top: 5px solid #00b894;
-        }
-
-        /* Oda Etiketleri */
-        .room-tag {
-            position: absolute; top: 120px; font-size: 3rem; font-weight: 900;
-            color: rgba(0,0,0,0.1); text-transform: uppercase; letter-spacing: 5px;
-            pointer-events: none; width: 100%; text-align: center;
-        }
-
-        #night-mask {
+        #night-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(10, 10, 30, 0.95); pointer-events: none; opacity: 0;
+            background: rgba(10, 10, 35, 0.92); pointer-events: none; opacity: 0;
             transition: opacity 1s; z-index: 50;
         }
 
         /* =========================================
-           3. POU CHARACTER
+           3. CHARACTER (POU)
            ========================================= */
         #pou-wrapper {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -40%);
-            width: 200px; height: 180px; z-index: 20; touch-action: none;
+            position: absolute; top: 50%; left: 50%; 
+            transform: translate(-50%, -40%);
+            width: clamp(200px, 30vw, 300px); /* Tablet uyumlu boyutlandırma */
+            height: clamp(180px, 27vw, 270px);
+            z-index: 20;
         }
 
-        #pou {
+        #pou-body {
             width: 100%; height: 100%;
-            background: #e67e22;
+            background: var(--accent);
             border-radius: 50% 50% 45% 45%;
             position: relative;
-            box-shadow: inset -10px -10px 20px rgba(0,0,0,0.2), 0 15px 25px rgba(0,0,0,0.3);
+            box-shadow: inset -15px -15px 30px rgba(0,0,0,0.15), 0 20px 40px rgba(0,0,0,0.3);
             display: flex; justify-content: center;
-            transition: transform 0.1s;
+            transition: transform 0.1s, background 0.3s;
+            cursor: pointer;
         }
-        #pou:active { transform: scale(0.95); }
 
-        .eyes { display: flex; gap: 20px; position: absolute; top: 50px; z-index: 25; }
+        /* Animasyonlar */
+        @keyframes chew {
+            0% { transform: scale(1, 1); }
+            25% { transform: scale(1.1, 0.9); }
+            50% { transform: scale(0.9, 1.1); }
+            75% { transform: scale(1.05, 0.95); }
+            100% { transform: scale(1, 1); }
+        }
+        .chewing { animation: chew 0.5s infinite; }
+
+        .eyes { display: flex; gap: 15%; position: absolute; top: 30%; z-index: 25; width: 60%; justify-content: center; }
         .eye {
-            width: 50px; height: 50px; background: white; border-radius: 50%;
-            border: 4px solid #333; position: relative; overflow: hidden;
+            width: 35%; padding-bottom: 35%; /* Kare oran */
+            background: white; border-radius: 50%;
+            border: clamp(3px, 0.5vw, 6px) solid #333; position: relative; overflow: hidden;
         }
         .pupil {
-            width: 18px; height: 18px; background: black; border-radius: 50%;
+            width: 40%; height: 40%; background: black; border-radius: 50%;
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
         }
         .lid {
             position: absolute; top: 0; left: 0; width: 100%; height: 0%;
-            background: inherit; z-index: 2; transition: height 0.1s; border-bottom: 3px solid #333;
+            background: inherit; z-index: 2; transition: height 0.1s; border-bottom: 2px solid #333;
         }
 
         .mouth {
-            width: 30px; height: 10px; border-bottom: 4px solid #333; border-radius: 50%;
-            position: absolute; top: 115px; transition: 0.2s;
+            width: 20%; height: 5%; border-bottom: clamp(3px, 0.6vw, 6px) solid #333; border-radius: 50%;
+            position: absolute; top: 65%; transition: 0.2s;
         }
-        .mouth.open { height: 30px; background: #600; border: 3px solid #333; }
+        .mouth.open { height: 15%; background: #600; border: 3px solid #333; border-radius: 50%; }
         .mouth.sad { transform: rotate(180deg) translateY(-10px); }
 
-        /* Aksesuarlar */
+        /* Aksesuarlar & Efektler */
         .acc { position: absolute; left: 50%; transform: translateX(-50%); pointer-events: none; z-index: 30; }
-        #acc-hat { top: -50px; font-size: 80px; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3)); }
-        #acc-glasses { top: 55px; font-size: 70px; }
+        #acc-hat { top: -25%; font-size: clamp(60px, 10vw, 100px); filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3)); }
+        #acc-glasses { top: 32%; font-size: clamp(50px, 9vw, 90px); }
 
-        /* Kaka */
+        .dirt {
+            position: absolute; width: 40px; height: 40px; background: #5d4037;
+            border-radius: 50%; filter: blur(3px); z-index: 26; opacity: 0.8;
+            transition: opacity 0.3s;
+        }
         .poop {
-            position: absolute; font-size: 50px; z-index: 15;
-            animation: bounce 1s infinite; cursor: pointer;
+            position: absolute; font-size: clamp(40px, 6vw, 60px); z-index: 15;
+            animation: bounce 2s infinite; cursor: pointer;
             filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
         }
         @keyframes bounce { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
 
-        /* Kir */
-        .dirt {
-            position: absolute; width: 35px; height: 35px; background: #5d4037;
-            border-radius: 50%; filter: blur(3px); z-index: 26;
-        }
-        .dirt.soaped { background: white; opacity: 0.8; }
-
         /* =========================================
-           4. UI OVERLAY
+           4. UI & HUD (TABLET/MOBILE OPTIMIZED)
            ========================================= */
         #ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
 
-        /* Top HUD */
         .top-bar {
-            position: absolute; top: 10px; width: 100%; padding: 0 15px;
-            display: flex; justify-content: space-between; align-items: center; pointer-events: auto;
+            position: absolute; top: 10px; width: 100%; padding: 0 20px;
+            display: flex; justify-content: space-between; pointer-events: auto;
         }
         .badge {
-            background: rgba(255,255,255,0.9); padding: 8px 15px; border-radius: 20px;
-            font-weight: bold; color: #444; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            display: flex; align-items: center; gap: 5px; border: 2px solid #fff;
+            background: var(--ui-bg); padding: 8px 16px; border-radius: 20px;
+            font-weight: bold; color: #333; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            font-size: clamp(14px, 3vw, 24px); border: 2px solid #fff;
+            display: flex; align-items: center; gap: 5px;
         }
 
-        /* Stats */
-        .stats {
-            position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
-            background: rgba(255,255,255,0.7); padding: 8px; border-radius: 15px;
-            display: flex; gap: 8px; backdrop-filter: blur(5px); pointer-events: auto;
+        .stats-panel {
+            position: absolute; top: 70px; left: 50%; transform: translateX(-50%);
+            background: rgba(255,255,255,0.6); padding: 10px; border-radius: 15px;
+            display: flex; gap: 10px; backdrop-filter: blur(5px);
+            width: clamp(250px, 60vw, 500px);
         }
-        .stat-box { width: 45px; height: 8px; background: #ddd; border-radius: 4px; overflow: hidden; position: relative; }
+        .stat-group { flex: 1; height: 10px; background: rgba(0,0,0,0.1); border-radius: 5px; overflow: hidden; position: relative; }
         .stat-fill { height: 100%; width: 100%; transition: width 0.5s; }
-        .stat-icon { position: absolute; top: -22px; left: 50%; transform: translateX(-50%); font-size: 14px; }
+        .stat-icon { position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 16px; }
 
         /* Bottom Dock */
         .dock {
-            position: absolute; bottom: 30px; width: 100%; pointer-events: auto;
-            display: flex; justify-content: center; transition: transform 0.3s;
+            position: absolute; bottom: calc(20px + var(--safe-bottom)); width: 100%;
+            display: flex; justify-content: center; pointer-events: auto;
+            transition: transform 0.3s;
         }
-        .dock.hidden { transform: translateY(150px); }
-        
-        .dock-inner {
-            background: rgba(255,255,255,0.9); padding: 10px 20px; border-radius: 30px;
+        .dock.hidden { transform: translateY(200px); }
+
+        .dock-scroll {
+            background: var(--ui-bg); padding: 15px; border-radius: 30px;
             display: flex; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            overflow-x: auto; max-width: 95vw;
+            overflow-x: auto; max-width: 90vw; scrollbar-width: none;
         }
+        .dock-scroll::-webkit-scrollbar { display: none; }
 
         .btn {
-            min-width: 60px; height: 60px; background: white; border-radius: 15px;
-            border: none; border-bottom: 4px solid #ccc; font-size: 30px;
+            min-width: clamp(60px, 12vw, 80px); height: clamp(60px, 12vw, 80px);
+            background: white; border-radius: 18px; border: none;
+            border-bottom: 4px solid #ccc; font-size: clamp(24px, 5vw, 36px);
             display: flex; justify-content: center; align-items: center; cursor: pointer;
         }
         .btn:active { transform: translateY(4px); border-bottom: 0; background: #eee; }
 
-        /* Draggable Food/Tools */
+        /* Drag Item */
         .drag-obj {
-            position: absolute; width: 60px; height: 60px; font-size: 50px;
+            position: absolute; width: 80px; height: 80px; font-size: 60px;
             z-index: 200; pointer-events: none; display: flex; justify-content: center; align-items: center;
+            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.2));
+            transform: scale(1.2); transition: transform 0.1s;
         }
 
         /* Toast */
         #toast {
-            position: absolute; top: 120px; left: 50%; transform: translateX(-50%);
-            background: #333; color: white; padding: 10px 20px; border-radius: 20px;
-            opacity: 0; transition: 0.3s; z-index: 500; font-weight: bold;
+            position: absolute; top: 130px; left: 50%; transform: translateX(-50%) translateY(-20px);
+            background: #333; color: white; padding: 12px 30px; border-radius: 30px;
+            opacity: 0; transition: 0.3s; z-index: 500; font-weight: bold; font-size: 18px;
         }
+        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
         /* =========================================
-           5. MODALS & GAMES
+           5. MODALS (SHOP & GAME)
            ========================================= */
         .modal {
             position: fixed; top:0; left:0; width:100%; height:100%;
@@ -234,44 +209,52 @@
             display: none; justify-content: center; align-items: center;
             backdrop-filter: blur(5px);
         }
-        .modal.open { display: flex; }
+        .modal.open { display: flex; animation: fadeIn 0.2s; }
+        @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
         
         .card {
-            width: 90%; max-width: 400px; height: 80%; background: #fff;
-            border-radius: 20px; display: flex; flex-direction: column; overflow: hidden;
-            animation: pop 0.3s;
+            width: 90%; max-width: 500px; height: 85%; background: #f5f6fa;
+            border-radius: 25px; display: flex; flex-direction: column; overflow: hidden;
+            animation: popUp 0.3s;
         }
-        @keyframes pop { from{transform:scale(0.8);} to{transform:scale(1);} }
+        @keyframes popUp { from{transform:scale(0.8);} to{transform:scale(1);} }
 
-        .card-header { padding: 15px; background: #eee; display:flex; justify-content:space-between; font-weight:bold; font-size:1.2rem; }
-        .card-body { flex: 1; overflow-y: auto; padding: 10px; background: #f5f5f5; }
-        
-        .shop-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .item { background: white; padding: 10px; border-radius: 10px; text-align: center; cursor: pointer; border: 2px solid transparent; }
-        .item.owned { border-color: #2ecc71; }
-        .item:active { background: #eee; }
+        .card-header { padding: 20px; background: #fff; display:flex; justify-content:space-between; align-items:center; font-weight:bold; font-size:1.2rem; border-bottom:1px solid #ddd; }
+        .card-body { flex: 1; overflow-y: auto; padding: 15px; }
+        .close-btn { background: #ff7675; color: white; border:none; width:36px; height:36px; border-radius:50%; font-size:18px; cursor:pointer;}
 
-        .game-canvas { width: 100%; height: 100%; background: transparent; }
-        .game-ui { position: absolute; top: 20px; left: 20px; color: white; font-size: 24px; font-weight: bold; text-shadow: 0 2px 5px black; pointer-events: none;}
-        
+        .shop-tabs { display: flex; gap: 10px; padding: 10px; background: #fff; overflow-x: auto;}
+        .tab { padding: 10px 20px; background: #eee; border-radius: 20px; border:none; font-weight:bold; cursor:pointer; white-space:nowrap;}
+        .tab.active { background: #333; color: white; }
+
+        .shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; }
+        .item { background: white; padding: 15px; border-radius: 15px; text-align: center; cursor: pointer; border: 2px solid transparent; transition:0.1s; }
+        .item:active { transform: scale(0.95); }
+        .item.owned { border-color: #2ecc71; background: #edfff4; }
+
+        /* Game Canvas */
+        .game-wrapper { width: 100%; height: 100%; position: relative; background: #222; }
+        canvas { display: block; width: 100%; height: 100%; }
+        .game-ui { position: absolute; top: 20px; left: 20px; color: white; font-size: 24px; font-weight: bold; pointer-events: none; text-shadow: 0 2px 4px #000; }
+
     </style>
 </head>
 <body>
 
-    <div id="night-mask"></div>
+    <div id="night-overlay"></div>
 
     <div id="world-track">
-        <div class="room room-0"><div class="room-tag">Yatak Odası</div></div>
-        <div class="room room-1"><div class="room-tag">Salon</div></div>
-        <div class="room room-2"><div class="room-tag">Mutfak</div></div>
-        <div class="room room-3"><div class="room-tag">Banyo</div></div>
-        <div class="room room-4"><div class="room-tag">Oyun Odası</div></div>
+        <div class="room room-0"><div class="room-label">Yatak Odası</div></div>
+        <div class="room room-1"><div class="room-label">Salon</div></div>
+        <div class="room room-2"><div class="room-label">Mutfak</div></div>
+        <div class="room room-3"><div class="room-label">Banyo</div></div>
+        <div class="room room-4"><div class="room-label">Oyun Odası</div></div>
     </div>
 
     <div id="pou-wrapper">
         <div class="acc" id="acc-hat"></div>
         <div class="acc" id="acc-glasses"></div>
-        <div id="pou" onclick="Main.poke()">
+        <div id="pou-body" onclick="Engine.poke()">
             <div class="eyes">
                 <div class="eye"><div class="lid" id="lid-l"></div><div class="pupil" id="p-l"></div></div>
                 <div class="eye"><div class="lid" id="lid-r"></div><div class="pupil" id="p-r"></div></div>
@@ -283,56 +266,60 @@
     <div id="ui">
         <div class="top-bar">
             <div class="badge">🪙 <span id="coin-disp">0</span></div>
-            <div class="badge" onclick="Main.save()">💾 Kaydet</div>
+            <div class="badge" onclick="Engine.saveGame(); UI.toast('Kaydedildi!')">💾</div>
         </div>
 
-        <div class="stats">
-            <div class="stat-box"><div class="stat-icon">🍖</div><div class="stat-fill" id="bar-hunger" style="background:#ff7675"></div></div>
-            <div class="stat-box"><div class="stat-icon">🧼</div><div class="stat-fill" id="bar-clean" style="background:#74b9ff"></div></div>
-            <div class="stat-box"><div class="stat-icon">⚡</div><div class="stat-fill" id="bar-energy" style="background:#ffeaa7"></div></div>
-            <div class="stat-box"><div class="stat-icon">😊</div><div class="stat-fill" id="bar-fun" style="background:#a29bfe"></div></div>
+        <div class="stats-panel">
+            <div class="stat-group"><div class="stat-icon">🍖</div><div class="stat-fill" id="bar-hunger" style="background:#ff7675"></div></div>
+            <div class="stat-group"><div class="stat-icon">🧼</div><div class="stat-fill" id="bar-clean" style="background:#74b9ff"></div></div>
+            <div class="stat-group"><div class="stat-icon">⚡</div><div class="stat-fill" id="bar-energy" style="background:#ffeaa7"></div></div>
+            <div class="stat-group"><div class="stat-icon">😊</div><div class="stat-fill" id="bar-fun" style="background:#a29bfe"></div></div>
         </div>
 
-        <div id="toast">Mesaj</div>
+        <div id="toast">Hoşgeldin!</div>
 
         <div class="dock hidden" id="dock-0">
-            <div class="dock-inner">
-                <button class="btn" onclick="Main.toggleSleep()">💡</button>
+            <div class="dock-scroll">
+                <button class="btn" onclick="Engine.toggleSleep()">💡</button>
                 <button class="btn" onclick="Shop.open('clothes')">👕</button>
                 <button class="btn" onclick="Shop.open('wallpaper')">🖼️</button>
             </div>
         </div>
         <div class="dock" id="dock-1">
-            <div class="dock-inner"><small>Oda değiştirmek için kaydır</small></div>
+            <div class="dock-scroll">
+                <small style="color:#666; font-weight:bold;">Odaları gezmek için kaydır</small>
+            </div>
         </div>
         <div class="dock hidden" id="dock-2">
-            <div class="dock-inner" id="food-list">
-                <button class="btn" onclick="Shop.open('food')">➕</button>
+            <div class="dock-scroll" id="dock-food">
+                <button class="btn" onclick="Shop.open('food')" style="border-color:#fab1a0; background:#fff0f0">🛒</button>
             </div>
         </div>
         <div class="dock hidden" id="dock-3">
-            <div class="dock-inner">
-                <button class="btn" id="tool-sponge" onmousedown="Interact.start(event,'sponge')" ontouchstart="Interact.start(event,'sponge')">🧽</button>
-                <button class="btn" id="tool-shower" onmousedown="Interact.start(event,'shower')" ontouchstart="Interact.start(event,'shower')">🚿</button>
+            <div class="dock-scroll">
+                <button class="btn" id="tool-sponge" onmousedown="Interaction.startTool(event,'sponge')" ontouchstart="Interaction.startTool(event,'sponge')">🧽</button>
+                <button class="btn" id="tool-shower" onmousedown="Interaction.startTool(event,'shower')" ontouchstart="Interaction.startTool(event,'shower')">🚿</button>
                 <button class="btn" onclick="Shop.open('potions')">🧪</button>
             </div>
         </div>
         <div class="dock hidden" id="dock-4">
-            <div class="dock-inner">
-                <button class="btn" onclick="Games.start('skyjump')">🚀 Sky Jump</button>
-                <button class="btn" onclick="Games.start('fooddrop')">🍎 Food Drop</button>
-                <button class="btn" onclick="Games.start('driver')">🏎️ Driver</button>
+            <div class="dock-scroll">
+                <button class="btn" onclick="MiniGames.start('skyjump')">🚀 Zıpla</button>
+                <button class="btn" onclick="MiniGames.start('fooddrop')">🍎 Yakala</button>
             </div>
         </div>
     </div>
 
     <div class="modal" id="modal-shop">
         <div class="card">
-            <div class="card-header"><span>Market</span><button onclick="Shop.close()">✕</button></div>
-            <div style="padding:10px; display:flex; gap:5px; overflow-x:auto;">
-                <button onclick="Shop.render('food')">🍔 Yemek</button>
-                <button onclick="Shop.render('clothes')">🧢 Giyim</button>
-                <button onclick="Shop.render('potions')">🧪 İksir</button>
+            <div class="card-header">
+                <span>Market</span>
+                <button class="close-btn" onclick="Shop.close()">✕</button>
+            </div>
+            <div class="shop-tabs">
+                <button class="tab active" onclick="Shop.render('food')">Yiyecek</button>
+                <button class="tab" onclick="Shop.render('clothes')">Giyim</button>
+                <button class="tab" onclick="Shop.render('potions')">İksir</button>
             </div>
             <div class="card-body">
                 <div class="shop-grid" id="shop-grid"></div>
@@ -340,427 +327,519 @@
         </div>
     </div>
 
-    <div class="modal" id="modal-game" style="background:#222;">
-        <div style="position:relative; width:100%; height:100%;">
-            <canvas class="game-canvas" id="game-cvs"></canvas>
-            <div class="game-ui" id="game-score">0</div>
-            <button style="position:absolute; top:20px; right:20px; font-size:30px; background:none; border:none; color:white;" onclick="Games.stop()">✕</button>
-            <div id="game-controls" style="position:absolute; bottom:20px; width:100%; text-align:center; color:white; pointer-events:none;">Ekrana dokunarak oyna</div>
+    <div class="modal" id="modal-game">
+        <div class="game-wrapper">
+            <canvas id="game-cvs"></canvas>
+            <div class="game-ui">Skor: <span id="game-score">0</span></div>
+            <button style="position:absolute; top:20px; right:20px; z-index:10; font-size:30px; background:rgba(0,0,0,0.5); border:none; color:white; border-radius:50%; width:50px; height:50px;" onclick="MiniGames.stop()">✕</button>
+            <div id="game-msg" style="position:absolute; bottom:20px; width:100%; text-align:center; color:rgba(255,255,255,0.7);">Oynamak için ekrana dokun</div>
         </div>
     </div>
 
     <script>
-        /* --- VERİLER VE AYARLAR --- */
+        /* =========================================
+           DATA & CONFIG
+           ========================================= */
         const DB = {
-            items: {
-                food: [
-                    {id:'burger', name:'Burger', icon:'🍔', price:10, fill:25},
-                    {id:'pizza', name:'Pizza', icon:'🍕', price:15, fill:30},
-                    {id:'sushi', name:'Sushi', icon:'🍣', price:20, fill:20},
-                    {id:'broccoli', name:'Brokoli', icon:'🥦', price:5, fill:10},
-                    {id:'donut', name:'Donut', icon:'🍩', price:8, fill:15},
-                    {id:'fries', name:'Patates', icon:'🍟', price:6, fill:12}
-                ],
-                clothes: [
-                    {id:'hat_top', name:'Silindir', icon:'🎩', price:100, type:'hat'},
-                    {id:'hat_cap', name:'Şapka', icon:'🧢', price:50, type:'hat'},
-                    {id:'hat_cowboy', name:'Kovboy', icon:'🤠', price:150, type:'hat'},
-                    {id:'gls_sun', name:'Gözlük', icon:'🕶️', price:80, type:'glasses'},
-                    {id:'gls_nerd', name:'Nerd', icon:'🤓', price:60, type:'glasses'}
-                ],
-                potions: [
-                    {id:'pot_heal', name:'Tam Şifa', icon:'❤️', price:50, type:'heal'},
-                    {id:'pot_fat', name:'Zayıflatıcı', icon:'🧪', price:30, type:'diet'},
-                    {id:'col_blue', name:'Mavi', icon:'🔵', price:200, type:'color', val:'#0984e3'},
-                    {id:'col_pink', name:'Pembe', icon:'🟣', price:200, type:'color', val:'#e056fd'},
-                    {id:'col_green', name:'Yeşil', icon:'🟢', price:200, type:'color', val:'#badc58'}
-                ]
-            }
+            food: [
+                {id:'burger', name:'Burger', icon:'🍔', price:15, fill:25},
+                {id:'pizza', name:'Pizza', icon:'🍕', price:20, fill:30},
+                {id:'sushi', name:'Sushi', icon:'🍣', price:25, fill:20},
+                {id:'donut', name:'Donut', icon:'🍩', price:10, fill:15},
+                {id:'broccoli', name:'Brokoli', icon:'🥦', price:5, fill:10},
+                {id:'fries', name:'Patates', icon:'🍟', price:8, fill:12}
+            ],
+            clothes: [
+                {id:'hat_top', name:'Silindir', icon:'🎩', price:150, type:'hat'},
+                {id:'hat_cap', name:'Kep', icon:'🧢', price:80, type:'hat'},
+                {id:'hat_cow', name:'Kovboy', icon:'🤠', price:120, type:'hat'},
+                {id:'gls_sun', name:'Gözlük', icon:'🕶️', price:100, type:'glasses'},
+                {id:'gls_nerd', name:'Nerd', icon:'🤓', price:90, type:'glasses'}
+            ],
+            potions: [
+                {id:'pot_heal', name:'Tam Şifa', icon:'❤️', price:100, type:'heal'},
+                {id:'col_blue', name:'Mavi', icon:'🔵', price:200, type:'color', val:'#74b9ff'},
+                {id:'col_pink', name:'Pembe', icon:'🟣', price:200, type:'color', val:'#e056fd'},
+                {id:'col_green', name:'Yeşil', icon:'🟢', price:200, type:'color', val:'#55efc4'},
+                {id:'col_def', name:'Turuncu', icon:'🟠', price:200, type:'color', val:'#e67e22'}
+            ]
         };
 
         const State = {
-            coins: 300,
-            stats: { hunger: 80, clean: 60, energy: 90, fun: 80 },
+            coins: 200,
+            stats: { hunger: 80, clean: 70, energy: 90, fun: 80 },
             inventory: ['🍔', '🥦'],
             unlocked: [],
             equipped: { hat: null, glasses: null, color: '#e67e22' },
             room: 1,
             sleep: false,
-            poopCount: 0
+            lastLogin: Date.now()
         };
 
-        /* --- ANA MOTOR --- */
-        const Main = {
+        /* =========================================
+           ENGINE CORE
+           ========================================= */
+        const Engine = {
             init: () => {
-                Main.load();
+                Engine.load();
                 UI.update();
-                UI.renderFood();
-                Main.loop();
-                Interact.init();
+                UI.renderInventory();
+                UI.switchRoom(1);
+                
+                // Loops
+                setInterval(Engine.tick, 2000); // Stat decay
+                setInterval(Engine.blink, 4000); // Göz kırpma
+                setInterval(Engine.spawnPoopChance, 15000); // Kaka ihtimali
+                
+                Interaction.initSwipe();
+                Interaction.initEyeTrack();
             },
-            loop: () => {
-                // Zamanlayıcılar
-                setInterval(() => {
-                    if(State.sleep) {
-                        State.stats.energy = Math.min(100, State.stats.energy + 5);
-                        State.stats.hunger = Math.max(0, State.stats.hunger - 0.5);
-                    } else {
-                        State.stats.hunger = Math.max(0, State.stats.hunger - 1);
-                        State.stats.clean = Math.max(0, State.stats.clean - 0.5);
-                        State.stats.energy = Math.max(0, State.stats.energy - 0.5);
-                        State.stats.fun = Math.max(0, State.stats.fun - 0.5);
-                    }
-                    UI.update();
-                }, 2000);
 
-                // Göz Kırpma
-                setInterval(() => {
-                    if(!State.sleep) {
-                        document.querySelectorAll('.lid').forEach(l => l.style.height = '100%');
-                        setTimeout(() => document.querySelectorAll('.lid').forEach(l => l.style.height = '0%'), 150);
-                    }
-                }, 3500);
+            tick: () => {
+                if(State.sleep) {
+                    State.stats.energy = Math.min(100, State.stats.energy + 4);
+                    State.stats.hunger = Math.max(0, State.stats.hunger - 0.5);
+                } else {
+                    State.stats.hunger = Math.max(0, State.stats.hunger - 1);
+                    State.stats.clean = Math.max(0, State.stats.clean - 0.5);
+                    State.stats.energy = Math.max(0, State.stats.energy - 0.5);
+                    State.stats.fun = Math.max(0, State.stats.fun - 0.8);
+                }
+                UI.update();
+            },
 
-                // Kaka Oluşumu
-                setInterval(() => {
-                    if(!State.sleep && Math.random() > 0.7) Main.spawnPoop();
-                }, 10000);
+            saveGame: () => {
+                State.lastLogin = Date.now();
+                localStorage.setItem('pou_ultimate_final', JSON.stringify(State));
             },
-            spawnPoop: () => {
-                const p = document.createElement('div');
-                p.className = 'poop';
-                p.innerText = '💩';
-                p.style.left = (Math.random() * 80 + 10) + 'vw';
-                p.style.top = (Math.random() * 20 + 60) + 'vh'; // Yerde
-                p.onclick = function() {
-                    this.remove();
-                    State.coins += 5;
-                    UI.toast("+5 Altın");
-                    UI.update();
-                };
-                // Kakayı o anki odaya ekle
-                document.querySelector(`.room-${State.room}`).appendChild(p);
+
+            load: () => {
+                const d = localStorage.getItem('pou_ultimate_final');
+                if(d) {
+                    try {
+                        const saved = JSON.parse(d);
+                        Object.assign(State, saved);
+                        // Offline hesaplama (Basit)
+                        const mins = (Date.now() - State.lastLogin) / 60000;
+                        if(mins > 1) {
+                            State.stats.hunger = Math.max(0, State.stats.hunger - mins * 0.2);
+                            State.stats.energy = Math.max(0, State.stats.energy - mins * 0.1);
+                        }
+                    } catch(e) { console.error("Save bozuk", e); }
+                }
+                UI.applyLook();
             },
-            spawnDirt: () => {
-                const d = document.createElement('div');
-                d.className = 'dirt';
-                d.style.left = (20 + Math.random()*60) + '%';
-                d.style.top = (20 + Math.random()*60) + '%';
-                document.getElementById('pou').appendChild(d);
-                State.stats.clean -= 5;
+
+            toggleSleep: () => {
+                State.sleep = !State.sleep;
+                document.getElementById('night-overlay').style.opacity = State.sleep ? 1 : 0;
+                document.querySelectorAll('.lid').forEach(l => l.style.height = State.sleep ? '100%' : '0%');
+                UI.toast(State.sleep ? "İyi Geceler..." : "Günaydın!");
             },
+
             poke: () => {
-                if(State.sleep) return;
-                const p = document.getElementById('pou');
-                p.style.transform = "scale(1.1, 0.9)";
-                setTimeout(() => p.style.transform = "scale(1)", 150);
+                if(State.sleep) { UI.toast("Şşş! Uyuyor."); return; }
+                const b = document.getElementById('pou-body');
+                b.style.transform = "scale(1.1, 0.9)";
+                setTimeout(()=>b.style.transform="scale(1)", 150);
                 State.stats.fun = Math.min(100, State.stats.fun + 5);
                 UI.update();
             },
-            toggleSleep: () => {
-                State.sleep = !State.sleep;
-                document.getElementById('night-mask').style.opacity = State.sleep ? 1 : 0;
-                document.querySelectorAll('.lid').forEach(l => l.style.height = State.sleep ? '100%' : '0%');
+
+            spawnPoopChance: () => {
+                if(!State.sleep && Math.random() > 0.7 && State.room !== 3) {
+                    const p = document.createElement('div');
+                    p.className = 'poop';
+                    p.innerText = '💩';
+                    p.style.left = (Math.random() * 60 + 20) + 'vw';
+                    p.style.top = (Math.random() * 20 + 60) + 'vh';
+                    p.onclick = function() {
+                        this.remove();
+                        State.coins += 5;
+                        State.stats.clean = Math.min(100, State.stats.clean + 5);
+                        UI.toast("+5 Altın");
+                        UI.update();
+                    };
+                    document.querySelector(`.room-${State.room}`).appendChild(p);
+                    State.stats.clean -= 10;
+                    UI.update();
+                }
             },
-            save: () => { localStorage.setItem('pou_v3', JSON.stringify(State)); UI.toast("Kaydedildi"); },
-            load: () => {
-                const d = localStorage.getItem('pou_v3');
-                if(d) Object.assign(State, JSON.parse(d));
-                UI.applyLook();
-                UI.switchRoom(1);
+
+            spawnDirt: () => {
+                const d = document.createElement('div');
+                d.className = 'dirt';
+                d.style.left = (Math.random()*60+20) + '%';
+                d.style.top = (Math.random()*60+20) + '%';
+                document.getElementById('pou-body').appendChild(d);
+                State.stats.clean -= 5;
+            },
+
+            blink: () => {
+                if(State.sleep) return;
+                const lids = document.querySelectorAll('.lid');
+                lids.forEach(l => l.style.height = '100%');
+                setTimeout(() => lids.forEach(l => l.style.height = '0%'), 150);
+            },
+
+            eatAnimation: () => {
+                const b = document.getElementById('pou-body');
+                const m = document.getElementById('mouth');
+                b.classList.add('chewing');
+                m.classList.add('open');
+                setTimeout(() => {
+                    b.classList.remove('chewing');
+                    m.classList.remove('open');
+                }, 1500);
             }
         };
 
-        /* --- ARAYÜZ --- */
+        /* =========================================
+           UI MANAGER
+           ========================================= */
         const UI = {
             update: () => {
-                document.getElementById('bar-hunger').style.width = State.stats.hunger + '%';
-                document.getElementById('bar-clean').style.width = State.stats.clean + '%';
-                document.getElementById('bar-energy').style.width = State.stats.energy + '%';
-                document.getElementById('bar-fun').style.width = State.stats.fun + '%';
+                const s = State.stats;
+                document.getElementById('bar-hunger').style.width = s.hunger + '%';
+                document.getElementById('bar-clean').style.width = s.clean + '%';
+                document.getElementById('bar-energy').style.width = s.energy + '%';
+                document.getElementById('bar-fun').style.width = s.fun + '%';
                 document.getElementById('coin-disp').innerText = State.coins;
-                
-                const mouth = document.getElementById('mouth');
-                if(State.stats.hunger < 30 || State.stats.clean < 30) mouth.classList.add('sad');
-                else mouth.classList.remove('sad');
+
+                const m = document.getElementById('mouth');
+                if(!m.classList.contains('open')) {
+                    if(s.hunger < 30 || s.clean < 30 || s.fun < 30) m.classList.add('sad');
+                    else m.classList.remove('sad');
+                }
             },
-            renderFood: () => {
-                const div = document.getElementById('food-list');
-                const addBtn = div.firstElementChild; 
-                div.innerHTML = '';
-                State.inventory.forEach((icon, i) => {
-                    const btn = document.createElement('div');
-                    btn.className = 'btn';
-                    btn.innerText = icon;
-                    btn.ontouchstart = (e) => Interact.start(e, icon, i);
-                    btn.onmousedown = (e) => Interact.start(e, icon, i);
-                    div.appendChild(btn);
-                });
-                div.appendChild(addBtn);
-            },
-            applyLook: () => {
-                document.getElementById('pou').style.background = State.equipped.color;
-                document.getElementById('acc-hat').innerText = State.equipped.hat ? DB.items.clothes.find(x=>x.id==State.equipped.hat).icon : '';
-                document.getElementById('acc-glasses').innerText = State.equipped.glasses ? DB.items.clothes.find(x=>x.id==State.equipped.glasses).icon : '';
-            },
-            switchRoom: (i) => {
-                if(i<0 || i>4) return;
-                State.room = i;
-                document.getElementById('world-track').style.transform = `translateX(-${i*100}vw)`;
+
+            switchRoom: (idx) => {
+                if(idx < 0 || idx > 4) return;
+                State.room = idx;
+                document.getElementById('world-track').style.transform = `translateX(-${idx * 100}vw)`;
                 document.querySelectorAll('.dock').forEach(d => d.classList.add('hidden'));
-                const d = document.getElementById('dock-'+i);
-                if(d) setTimeout(()=>d.classList.remove('hidden'), 300);
+                const target = document.getElementById(`dock-${idx}`);
+                if(target) setTimeout(()=>target.classList.remove('hidden'), 250);
             },
+
+            renderInventory: () => {
+                const cont = document.getElementById('dock-food');
+                // Alışveriş butonu dışındakileri temizle
+                while(cont.children.length > 1) cont.removeChild(cont.lastChild);
+                
+                State.inventory.forEach((item, i) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn';
+                    btn.innerText = item;
+                    // Sürükleme olayları
+                    btn.ontouchstart = (e) => Interaction.startDrag(e, item, i);
+                    btn.onmousedown = (e) => Interaction.startDrag(e, item, i);
+                    cont.appendChild(btn);
+                });
+            },
+
+            applyLook: () => {
+                document.getElementById('pou-body').style.background = State.equipped.color;
+                
+                const hat = document.getElementById('acc-hat');
+                if(State.equipped.hat) {
+                    hat.innerText = DB.clothes.find(x=>x.id==State.equipped.hat).icon;
+                    hat.style.display = 'block';
+                } else hat.style.display = 'none';
+
+                const gls = document.getElementById('acc-glasses');
+                if(State.equipped.glasses) {
+                    gls.innerText = DB.clothes.find(x=>x.id==State.equipped.glasses).icon;
+                    gls.style.display = 'block';
+                } else gls.style.display = 'none';
+            },
+
             toast: (msg) => {
                 const t = document.getElementById('toast');
-                t.innerText = msg; t.style.opacity = 1;
-                setTimeout(()=>t.style.opacity=0, 2000);
+                t.innerText = msg; t.classList.add('show');
+                setTimeout(()=>t.classList.remove('show'), 2000);
             }
         };
 
-        /* --- ETKİLEŞİM (SÜRÜKLEME) --- */
-        const Interact = {
-            drag: null,
-            init: () => {
-                // Oda Kaydırma
-                let sx = 0;
-                document.addEventListener('touchstart', e => sx = e.touches[0].clientX, {passive:false});
-                document.addEventListener('touchend', e => {
-                    if(Interact.drag || Games.active) return;
-                    const diff = sx - e.changedTouches[0].clientX;
-                    if(Math.abs(diff) > 50) UI.switchRoom(State.room + (diff>0?1:-1));
-                }, {passive:false});
+        /* =========================================
+           INTERACTIONS
+           ========================================= */
+        const Interaction = {
+            dragging: false,
 
-                // Göz Takibi
-                const track = (x, y) => {
+            initSwipe: () => {
+                let sx = 0;
+                document.addEventListener('touchstart', e => sx=e.touches[0].clientX, {passive:false});
+                document.addEventListener('touchend', e => {
+                    if(Interaction.dragging) return;
+                    const diff = sx - e.changedTouches[0].clientX;
+                    if(Math.abs(diff) > 50) {
+                        UI.switchRoom(State.room + (diff > 0 ? 1 : -1));
+                    }
+                }, {passive:false});
+            },
+
+            initEyeTrack: () => {
+                const track = (x,y) => {
                     if(State.sleep) return;
                     ['p-l','p-r'].forEach(id => {
                         const el = document.getElementById(id);
                         const r = el.parentElement.getBoundingClientRect();
-                        const cx = r.left+r.width/2, cy = r.top+r.height/2;
+                        const cx = r.left + r.width/2;
+                        const cy = r.top + r.height/2;
                         const ang = Math.atan2(y-cy, x-cx);
-                        const dis = Math.min(6, Math.hypot(x-cx, y-cy)/8);
-                        el.style.transform = `translate(-50%,-50%) translate(${Math.cos(ang)*dis}px, ${Math.sin(ang)*dis}px)`;
+                        const dist = Math.min(6, Math.hypot(x-cx, y-cy)/8);
+                        el.style.transform = `translate(-50%,-50%) translate(${Math.cos(ang)*dist}px, ${Math.sin(ang)*dist}px)`;
                     });
                 };
                 window.onmousemove = e => track(e.clientX, e.clientY);
                 window.ontouchmove = e => track(e.touches[0].clientX, e.touches[0].clientY);
             },
-            start: (e, type, idx) => {
+
+            startDrag: (e, type, idx) => {
                 e.preventDefault();
-                const d = document.createElement('div');
-                d.className = 'drag-obj';
-                d.innerText = (type=='sponge'?'🧽':type=='shower'?'🚿':type);
-                document.body.appendChild(d);
+                e.stopPropagation();
+                if(State.sleep) { UI.toast("Uyuyor!"); return; }
                 
+                Interaction.dragging = true;
+                const el = document.createElement('div');
+                el.className = 'drag-obj';
+                el.innerText = (type=='sponge'?'🧽':type=='shower'?'🚿':type);
+                document.body.appendChild(el);
+
                 const move = (cx, cy) => {
-                    d.style.left = (cx-30)+'px'; d.style.top = (cy-30)+'px';
+                    el.style.left = (cx - 40) + 'px';
+                    el.style.top = (cy - 40) + 'px';
                     
-                    // Leke Temizleme
-                    if(type=='sponge' || type=='shower') {
-                        const pou = document.getElementById('pou').getBoundingClientRect();
-                        if(cx > pou.left && cx < pou.right && cy > pou.top && cy < pou.bottom) {
-                            document.querySelectorAll('.dirt').forEach(dirt => {
-                                const r = dirt.getBoundingClientRect();
-                                if(Math.hypot(cx-(r.left+17), cy-(r.top+17)) < 40) {
-                                    if(type=='sponge') dirt.classList.add('soaped');
-                                    else if(type=='shower' && dirt.classList.contains('soaped')) {
-                                        dirt.remove();
-                                        State.stats.clean = Math.min(100, State.stats.clean+10);
-                                        State.coins++; UI.update();
-                                    }
+                    // Temizlik Mantığı
+                    if(type=='sponge'||type=='shower') {
+                        document.querySelectorAll('.dirt').forEach(d => {
+                            const r = d.getBoundingClientRect();
+                            if(Math.hypot(cx-(r.left+20), cy-(r.top+20)) < 50) {
+                                if(type=='sponge') d.style.background = '#fff';
+                                else if(type=='shower' && d.style.background=='rgb(255, 255, 255)') {
+                                    d.remove();
+                                    State.stats.clean = Math.min(100, State.stats.clean+10);
+                                    State.coins++; UI.update();
                                 }
-                            });
-                        }
+                            }
+                        });
                     }
                 };
-                
+
+                const t = e.touches ? e.touches[0] : e;
+                move(t.clientX, t.clientY);
+
                 const up = (ev) => {
-                    d.remove();
+                    el.remove();
+                    Interaction.dragging = false;
                     window.removeEventListener('touchmove', tm);
                     window.removeEventListener('touchend', up);
                     window.removeEventListener('mousemove', mm);
                     window.removeEventListener('mouseup', up);
 
-                    // Yemek Yeme
-                    const m = document.getElementById('mouth').getBoundingClientRect();
-                    const r = d.getBoundingClientRect();
-                    if(type!='sponge' && type!='shower' && 
-                       r.left < m.right && r.right > m.left && r.top < m.bottom && r.bottom > m.top) {
-                        // Animasyon
-                        const p = document.getElementById('pou');
-                        p.style.transform = "scale(1.1,0.9)"; setTimeout(()=>p.style.transform="scale(1)", 200);
-                        document.getElementById('mouth').classList.add('open');
-                        setTimeout(()=>document.getElementById('mouth').classList.remove('open'), 500);
-                        
-                        // Mantık
-                        State.stats.hunger = Math.min(100, State.stats.hunger+20);
-                        State.inventory.splice(idx, 1);
-                        UI.renderFood(); UI.update();
-                        
-                        // Kaka İhtimali
-                        if(Math.random() > 0.5) Main.spawnPoop();
-                        if(Math.random() > 0.7) Main.spawnDirt();
+                    // Yeme Mantığı
+                    if(type!='sponge' && type!='shower') {
+                        const m = document.getElementById('mouth').getBoundingClientRect();
+                        const r = el.getBoundingClientRect();
+                        if(r.left < m.right && r.right > m.left && r.top < m.bottom && r.bottom > m.top) {
+                            if(State.stats.hunger >= 100) { UI.toast("Tokum!"); }
+                            else {
+                                State.inventory.splice(idx, 1);
+                                State.stats.hunger = Math.min(100, State.stats.hunger + 25);
+                                Engine.eatAnimation();
+                                UI.renderInventory();
+                                UI.update();
+                                if(Math.random()>0.5) Engine.spawnDirt();
+                            }
+                        }
                     }
                 };
 
                 const tm = ev => move(ev.touches[0].clientX, ev.touches[0].clientY);
                 const mm = ev => move(ev.clientX, ev.clientY);
-
+                
                 window.addEventListener('touchmove', tm, {passive:false});
                 window.addEventListener('touchend', up);
                 window.addEventListener('mousemove', mm);
                 window.addEventListener('mouseup', up);
-                
-                const t = e.touches ? e.touches[0] : e;
-                move(t.clientX, t.clientY);
-            }
+            },
+
+            startTool: (e, type) => Interaction.startDrag(e, type, -1)
         };
 
-        /* --- MARKET --- */
+        /* =========================================
+           SHOP SYSTEM
+           ========================================= */
         const Shop = {
             open: (cat) => {
                 document.getElementById('modal-shop').classList.add('open');
                 Shop.render(cat);
             },
             close: () => document.getElementById('modal-shop').classList.remove('open'),
+            
             render: (cat) => {
+                // Tab Highlight
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                event.target.classList.add('active'); // Basit event capture
+
                 const g = document.getElementById('shop-grid'); g.innerHTML = '';
-                DB.items[cat].forEach(i => {
+                const list = DB[cat] || [];
+                
+                list.forEach(item => {
                     const el = document.createElement('div');
                     el.className = 'item';
-                    if(State.unlocked.includes(i.id)) el.classList.add('owned');
-                    el.innerHTML = `<div style="font-size:30px">${i.icon}</div><div>${i.name}</div><div style="color:#e67e22;font-weight:bold">${State.unlocked.includes(i.id) ? 'Sahipsin' : i.price}</div>`;
-                    el.onclick = () => Shop.buy(i, cat);
+                    const owned = State.unlocked.includes(item.id);
+                    if(owned) el.className += ' owned';
+
+                    el.innerHTML = `
+                        <div style="font-size:30px">${item.icon}</div>
+                        <div style="font-weight:bold;font-size:12px">${item.name}</div>
+                        <div style="color:${owned?'#27ae60':'#e67e22'}">${owned ? 'Sahipsin' : item.price}</div>
+                    `;
+                    el.onclick = () => Shop.buy(item, cat);
                     g.appendChild(el);
                 });
             },
+
             buy: (item, cat) => {
                 if(cat == 'clothes' && State.unlocked.includes(item.id)) {
-                    State.equipped[item.type] = (State.equipped[item.type]==item.id ? null : item.id);
-                    UI.applyLook(); return;
+                    // Giy
+                    State.equipped[item.type] = (State.equipped[item.type] == item.id) ? null : item.id;
+                    UI.applyLook(); UI.toast("Giyildi"); return;
                 }
+
                 if(State.coins >= item.price) {
                     State.coins -= item.price;
-                    if(cat == 'food') { State.inventory.push(item.icon); UI.renderFood(); UI.toast("Leziz!"); }
-                    else if(cat == 'clothes') { State.unlocked.push(item.id); Shop.render(cat); UI.toast("Giyildi!"); }
+                    if(cat == 'food') { 
+                        State.inventory.push(item.icon); 
+                        UI.renderInventory(); 
+                        UI.toast("Leziz!");
+                    }
+                    else if(cat == 'clothes') { 
+                        State.unlocked.push(item.id); 
+                        Shop.render(cat);
+                        UI.toast("Satın Alındı!"); 
+                    }
                     else if(cat == 'potions') {
-                        if(item.type=='heal') { State.stats.hunger=100; State.stats.clean=100; State.stats.energy=100; }
-                        else if(item.type=='color') { State.equipped.color = item.val; UI.applyLook(); }
-                        UI.toast("İçildi!");
+                        if(item.type == 'heal') State.stats = {hunger:100,clean:100,energy:100,fun:100};
+                        else if(item.type == 'color') { State.equipped.color = item.val; UI.applyLook(); }
+                        UI.toast("Lıkır Lıkır!");
                     }
                     UI.update();
-                } else UI.toast("Para Yetersiz!");
+                } else {
+                    UI.toast("Para Yetersiz!");
+                }
             }
         };
 
-        /* --- OYUNLAR (CANVAS) --- */
-        const Games = {
+        /* =========================================
+           MINIGAMES (CANVAS)
+           ========================================= */
+        const MiniGames = {
             active: false, ctx: null, cvs: null, loop: null,
             mode: '', score: 0, entities: [], player: {},
-            
-            start: (game) => {
-                Games.active = true; Games.mode = game; Games.score = 0; Games.entities = [];
-                const m = document.getElementById('modal-game'); m.style.display = 'block';
-                const cvs = document.getElementById('game-cvs');
-                cvs.width = window.innerWidth; cvs.height = window.innerHeight;
-                Games.cvs = cvs; Games.ctx = cvs.getContext('2d');
+
+            start: (mode) => {
+                MiniGames.active = true; MiniGames.mode = mode; MiniGames.score = 0;
+                document.getElementById('modal-game').classList.add('open');
                 
-                // Oyun Başlangıç Ayarları
-                if(game == 'skyjump') {
-                    Games.player = { x: cvs.width/2, y: cvs.height-150, vy: -10, r: 15 };
-                    // Düzeltme: Ayağının altına platform koy
-                    Games.entities.push({x: cvs.width/2 - 30, y: cvs.height-50, w:60, h:10});
-                    for(let i=0; i<6; i++) Games.entities.push({x: Math.random()*(cvs.width-60), y:cvs.height - 150 - (i*120), w:60, h:10});
-                } 
-                else if(game == 'fooddrop') {
-                    Games.player = { x: cvs.width/2, y: cvs.height-80, w: 50, h: 50 };
-                }
-                else if(game == 'driver') {
-                    Games.player = { x: cvs.width/2, y: cvs.height-100, w: 40, h: 60 };
+                const cvs = document.getElementById('game-cvs');
+                cvs.width = cvs.offsetWidth; cvs.height = cvs.offsetHeight;
+                MiniGames.cvs = cvs; MiniGames.ctx = cvs.getContext('2d');
+                MiniGames.entities = [];
+
+                if(mode == 'skyjump') {
+                    MiniGames.player = { x: cvs.width/2, y: cvs.height-100, vy: -10, r: 15 };
+                    // Başlangıç platformları
+                    for(let i=0; i<8; i++) MiniGames.entities.push({
+                        x: Math.random()*(cvs.width-60), y: cvs.height - (i*100), w: 60, h: 10
+                    });
+                } else if(mode == 'fooddrop') {
+                    MiniGames.player = { x: cvs.width/2, y: cvs.height-50, w:50, h:50 };
                 }
 
-                // Kontrol
-                cvs.onclick = () => { if(game=='skyjump') Games.player.vy = -12; };
+                // Inputs
+                cvs.onclick = () => { if(mode=='skyjump') MiniGames.player.vy = -13; };
+                cvs.ontouchstart = (e) => {
+                    e.preventDefault(); 
+                    if(mode=='skyjump') MiniGames.player.vy = -13;
+                    MiniGames.player.x = e.touches[0].clientX;
+                };
                 cvs.ontouchmove = (e) => {
                     e.preventDefault();
-                    Games.player.x = e.touches[0].clientX;
+                    MiniGames.player.x = e.touches[0].clientX;
                 };
 
-                Games.tick();
+                MiniGames.tick();
             },
+
             stop: () => {
-                Games.active = false; cancelAnimationFrame(Games.loop);
-                document.getElementById('modal-game').style.display = 'none';
-                if(Games.score > 0) {
-                    const r = Math.ceil(Games.score / 10);
-                    State.coins += r; UI.toast(`Oyun Bitti! +${r} Altın`); UI.update();
+                MiniGames.active = false; cancelAnimationFrame(MiniGames.loop);
+                document.getElementById('modal-game').classList.remove('open');
+                if(MiniGames.score > 0) {
+                    const r = Math.floor(MiniGames.score/10);
+                    State.coins += r; 
+                    State.stats.fun = Math.min(100, State.stats.fun + 20);
+                    UI.toast(`Oyun Bitti: +${r} Altın`);
+                    UI.update();
                 }
             },
+
             tick: () => {
-                if(!Games.active) return;
-                const c = Games.ctx, w = Games.cvs.width, h = Games.cvs.height, p = Games.player;
+                if(!MiniGames.active) return;
+                const c = MiniGames.ctx, w = MiniGames.cvs.width, h = MiniGames.cvs.height, p = MiniGames.player;
                 c.clearRect(0,0,w,h);
 
-                /* --- SKY JUMP --- */
-                if(Games.mode == 'skyjump') {
-                    p.vy += 0.4; p.y += p.vy;
-                    // Kamera Yukarı
+                if(MiniGames.mode == 'skyjump') {
+                    p.vy += 0.5; p.y += p.vy;
+
+                    // Kamera
                     if(p.y < h/2) {
-                        p.y = h/2; let diff = -p.vy; Games.score += diff;
-                        Games.entities.forEach(e => {
-                            e.y += diff;
+                        p.y = h/2;
+                        const d = -p.vy;
+                        MiniGames.score += d;
+                        MiniGames.entities.forEach(e => {
+                            e.y += d;
                             if(e.y > h) { e.y = -20; e.x = Math.random()*(w-60); }
                         });
                     }
-                    // Platform Çarpışma
-                    if(p.vy > 0) Games.entities.forEach(e => {
+
+                    // Çarpışma
+                    if(p.vy > 0) MiniGames.entities.forEach(e => {
                         if(p.x > e.x-10 && p.x < e.x+e.w+10 && p.y+p.r > e.y && p.y+p.r < e.y+20) p.vy = -13;
                     });
-                    // Ölüm
-                    if(p.y > h) { Games.stop(); return; }
-                    
-                    // Çiz
-                    c.fillStyle = '#2ecc71'; Games.entities.forEach(e => c.fillRect(e.x, e.y, e.w, e.h));
-                    c.fillStyle = State.equipped.color; c.beginPath(); c.arc(p.x, p.y, p.r, 0, Math.PI*2); c.fill();
-                }
 
-                /* --- FOOD DROP --- */
-                else if(Games.mode == 'fooddrop') {
-                    if(Math.random() < 0.03) Games.entities.push({x:Math.random()*(w-30), y:-30, type:Math.random()>0.8?'💣':'🍎'});
-                    Games.entities.forEach((e, i) => {
-                        e.y += 5;
-                        c.font = "30px Arial"; c.fillText(e.type, e.x, e.y);
-                        // Çarpışma
+                    if(p.y > h) { MiniGames.stop(); return; }
+
+                    // Çizim
+                    c.fillStyle = '#2ecc71'; MiniGames.entities.forEach(e => c.fillRect(e.x, e.y, e.w, e.h));
+                    c.fillStyle = State.equipped.color; c.beginPath(); c.arc(p.x, p.y, p.r, 0, Math.PI*2); c.fill();
+                    // Göz
+                    c.fillStyle = 'white'; c.beginPath(); c.arc(p.x-5,p.y-3,5,0,Math.PI*2); c.fill(); c.beginPath(); c.arc(p.x+5,p.y-3,5,0,Math.PI*2); c.fill();
+                    c.fillStyle = 'black'; c.beginPath(); c.arc(p.x-5,p.y-3,2,0,Math.PI*2); c.fill(); c.beginPath(); c.arc(p.x+5,p.y-3,2,0,Math.PI*2); c.fill();
+
+                } 
+                else if(MiniGames.mode == 'fooddrop') {
+                    if(Math.random() < 0.03) MiniGames.entities.push({x:Math.random()*(w-30), y:-30, t:Math.random()>0.8?'💣':'🍎'});
+                    
+                    MiniGames.entities.forEach((e, i) => {
+                        e.y += 5; c.font="30px Arial"; c.fillText(e.t, e.x, e.y);
                         if(Math.hypot(p.x-e.x, p.y-e.y) < 40) {
-                            if(e.type=='💣') { Games.stop(); return; }
-                            Games.score += 10; Games.entities.splice(i,1);
+                            if(e.t=='💣') { MiniGames.stop(); return; }
+                            MiniGames.score += 20; MiniGames.entities.splice(i,1);
                         }
                     });
-                    // Pou Çiz
-                    c.fillStyle = State.equipped.color; c.fillRect(p.x-25, p.y-25, 50, 50);
-                    // Gözler
-                    c.fillStyle='white'; c.fillRect(p.x-15, p.y-15, 10,10); c.fillRect(p.x+5, p.y-15, 10,10);
+
+                    c.fillStyle = State.equipped.color; c.beginPath(); c.arc(p.x, p.y, 25, 0, Math.PI*2); c.fill();
                 }
 
-                /* --- DRIVER --- */
-                else if(Games.mode == 'driver') {
-                    Games.score += 1;
-                    if(Games.score % 20 == 0) Games.entities.push({x:Math.random()*(w-50), y:-50, w:50, h:80});
-                    Games.entities.forEach((e,i) => {
-                        e.y += 8;
-                        c.fillStyle = 'red'; c.fillRect(e.x, e.y, e.w, e.h);
-                        if(p.x < e.x + e.w && p.x + p.w > e.x && p.y < e.y + e.h && p.h + p.y > e.y) { Games.stop(); return; }
-                    });
-                    c.fillStyle = 'blue'; c.fillRect(p.x, p.y, p.w, p.h);
-                }
-
-                document.getElementById('game-score').innerText = Math.floor(Games.score);
-                Games.loop = requestAnimationFrame(Games.tick);
+                document.getElementById('game-score').innerText = Math.floor(MiniGames.score);
+                MiniGames.loop = requestAnimationFrame(MiniGames.tick);
             }
         };
 
-        window.onload = Main.init;
+        window.onload = Engine.init;
     </script>
 </body>
 </html>
