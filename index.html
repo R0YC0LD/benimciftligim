@@ -22,9 +22,9 @@
 
         * {
             box-sizing: border-box;
-            user-select: none; /* Metin seçimini engelle */
+            user-select: none;
             -webkit-user-select: none;
-            touch-action: manipulation; /* Çift tıklama zoom'u engelle */
+            touch-action: manipulation;
         }
 
         body {
@@ -104,15 +104,18 @@
             border: 2px solid white;
         }
 
-        /* Oyun Alanı */
-        #game-container {
+        /* --- DÜZELTİLEN KISIM: Oyun Alanı (Grid) --- */
+        /* Eski kodda #game-container vardı, burada #grid-p1 ve #grid-p2 olarak güncellendi */
+        #grid-p1, #grid-p2 {
             display: grid;
             gap: var(--grid-gap);
             background-color: #222;
             padding: 10px;
             border-radius: 10px;
-            max-width: 95vw;
+            width: 100%; /* Genişlik eklendi */
+            max-width: 500px; /* Çok geniş olmaması için */
             max-height: 60vh;
+            margin: 0 auto; /* Ortalamak için */
             /* Grid template JS ile ayarlanacak */
         }
 
@@ -125,8 +128,9 @@
             justify-content: center;
             font-weight: bold;
             font-size: 1.2rem;
-            aspect-ratio: 1; /* Kare olması için */
+            aspect-ratio: 1; 
             transition: background-color 0.2s;
+            position: relative;
         }
 
         /* Oyuncu 1 Görünümü */
@@ -199,7 +203,7 @@
         #result-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.95);
             display: none;
             flex-direction: column;
             align-items: center;
@@ -210,7 +214,6 @@
         .win { color: var(--p2-primary); }
         .lose { color: var(--p1-primary); }
 
-        /* Animasyonlar */
         @keyframes shake {
             0% { transform: translate(1px, 1px) rotate(0deg); }
             10% { transform: translate(-1px, -2px) rotate(-1deg); }
@@ -225,9 +228,8 @@
             100% { transform: translate(1px, -2px) rotate(-1deg); }
         }
 
-        /* Responsive Ayarlar */
         @media (min-width: 768px) {
-            #game-container {
+            #grid-p1, #grid-p2 {
                 gap: 6px;
                 padding: 20px;
             }
@@ -331,9 +333,6 @@
             // CSS Grid Style
             container.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
             
-            // Hücre boyutu hesaplama (responsive olması için)
-            // Mobil ekranlarda genişliğe, tabletlerde yüksekliğe göre sığdır
-            
             for (let i = 0; i < totalCells; i++) {
                 const cell = document.createElement('div');
                 cell.classList.add('cell');
@@ -357,7 +356,6 @@
                     mines.push(index);
                     cellElement.classList.add('has-mine');
                 } else {
-                    // Animasyon ile uyar (Titreşim vs eklenebilir)
                     alert("Maksimum mayın limitine ulaştın!");
                 }
             }
