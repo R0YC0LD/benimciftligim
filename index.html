@@ -1,665 +1,958 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>Professional Farm Sim - JS Edition</title>
+    <title>Pro Farm Sim Engine</title>
     <style>
-        /* CSS RESET & TEMEL AYARLAR */
-        * { box-sizing: border-box; touch-action: none; /* Mobilde varsayılan kaydırmayı kapatır */ user-select: none; -webkit-user-select: none; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #2c3e50; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        
+        /* CSS RESET & MOBILE OPTIMIZATIONS */
+        :root {
+            --ui-bg: rgba(255, 255, 255, 0.95);
+            --primary-color: #ff9f43;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none; /* Metin seçimini engelle */
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* Scroll engelleme */
+            background-color: #57c1eb; /* Gökyüzü mavisi */
+            font-family: var(--font-main);
+            touch-action: none; /* Tarayıcı zoom/scroll hareketlerini engelle */
+        }
+
         /* OYUN ALANI */
-        #gameContainer { position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: #8fbc8f; }
-        canvas { box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-radius: 4px; background: #90EE90; }
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
 
-        /* KULLANICI ARAYÜZÜ (UI) KATMANI */
-        #uiLayer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; /* Tıklamalar canvas'a geçsin */ }
-        
-        .hud-panel { position: absolute; pointer-events: auto; background: rgba(255, 255, 255, 0.9); border: 2px solid #5d4037; border-radius: 12px; padding: 10px; display: flex; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        
-        /* Üst Bar: Level, Coin, XP */
-        #topBar { top: 10px; left: 10px; right: 10px; height: 60px; justify-content: space-between; font-weight: bold; color: #3e2723; }
-        .stat-box { display: flex; flex-direction: column; align-items: center; min-width: 60px; }
-        .stat-value { font-size: 1.2rem; color: #d35400; }
-        .stat-label { font-size: 0.7rem; color: #795548; }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
 
-        /* Alt Bar: Araçlar ve Market */
-        #bottomBar { bottom: 10px; left: 10px; right: 10px; height: 80px; justify-content: center; gap: 10px; background: transparent; border: none; box-shadow: none; }
-        .tool-btn { width: 64px; height: 64px; background: #fff; border: 3px solid #795548; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 32px; cursor: pointer; transition: transform 0.1s; box-shadow: 0 4px 0 #5d4037; pointer-events: auto; }
-        .tool-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #5d4037; }
-        .tool-btn.active { background: #ffe0b2; border-color: #e65100; transform: scale(1.1); }
+        /* UI KATMANI (DOM BASED UI) */
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Tıklamalar canvas'a geçsin */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
 
-        /* Context Menu (Tarlaya tıklayınca çıkan) */
-        #contextMenu { position: absolute; display: none; background: rgba(255,255,255,0.95); padding: 10px; border-radius: 50px; border: 2px solid #333; pointer-events: auto; gap: 10px; transform: translate(-50%, -100%); transition: opacity 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        .ctx-item { width: 50px; height: 50px; border-radius: 50%; background: #eee; border: 2px solid #aaa; display: flex; justify-content: center; align-items: center; font-size: 24px; cursor: pointer; }
+        .hud-panel {
+            pointer-events: auto; /* UI elemanları tıklanabilir olsun */
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+        }
 
-        /* Market Modal */
-        #marketModal { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; max-width: 400px; background: #fffaf0; border: 4px solid #8d6e63; border-radius: 15px; padding: 20px; pointer-events: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.5); z-index: 100; }
-        .market-header { text-align: center; font-size: 1.5rem; color: #3e2723; margin-bottom: 15px; border-bottom: 2px dashed #ccc; padding-bottom: 10px; }
-        .market-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        .market-item { background: #fff; border: 1px solid #ddd; padding: 10px; border-radius: 8px; text-align: center; cursor: pointer; }
-        .market-item:active { background: #eee; }
-        .btn-close { display: block; width: 100%; padding: 10px; margin-top: 15px; background: #e74c3c; color: white; text-align: center; border: none; border-radius: 5px; font-weight: bold; }
-        
-        /* Bildirimler (Toast) */
-        #toastArea { position: absolute; top: 80px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 5px; pointer-events: none; }
-        .toast { background: rgba(0,0,0,0.7); color: white; padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; animation: fadeOut 2s forwards; }
-        @keyframes fadeOut { 0% { opacity: 1; transform: translateY(0); } 80% { opacity: 1; transform: translateY(-10px); } 100% { opacity: 0; } }
+        #top-bar {
+            background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 100%);
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            text-shadow: 1px 1px 2px black;
+        }
+
+        #bottom-bar {
+            background: white;
+            border-top: 4px solid var(--primary-color);
+            padding: 15px;
+            overflow-x: auto;
+            justify-content: center;
+        }
+
+        /* TOOL BUTTONS */
+        .tool-btn {
+            width: 60px;
+            height: 60px;
+            background: #eee;
+            border: 2px solid #ccc;
+            border-radius: 12px;
+            font-size: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.1s, background 0.2s;
+            position: relative;
+        }
+
+        .tool-btn.active {
+            background: #ffeaa7;
+            border-color: #fdcb6e;
+            transform: translateY(-5px);
+            box-shadow: 0 5px 0 #e1b12c;
+        }
+
+        .tool-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: red;
+            color: white;
+            font-size: 12px;
+            border-radius: 50%;
+            padding: 2px 6px;
+        }
+
+        /* TOAST MESSAGE */
+        #toast-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .toast {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            animation: fadeUp 2s forwards;
+        }
+
+        @keyframes fadeUp {
+            0% { opacity: 0; transform: translateY(20px); }
+            10% { opacity: 1; transform: translateY(0); }
+            80% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
     </style>
 </head>
 <body>
 
-<div id="gameContainer">
+<div id="game-container">
     <canvas id="gameCanvas"></canvas>
-    <div id="uiLayer">
-        <div id="topBar" class="hud-panel">
-            <div class="stat-box"><span class="stat-label">LEVEL</span><span id="uiLevel" class="stat-value">1</span></div>
-            <div class="stat-box"><span class="stat-label">XP</span><span id="uiXp" class="stat-value">0/100</span></div>
-            <div class="stat-box"><span class="stat-label">COIN</span><span id="uiCoin" class="stat-value">0</span></div>
-            <div class="stat-box"><span class="stat-label">SILO</span><span id="uiSilo" class="stat-value">0/20</span></div>
-        </div>
-        
-        <div id="contextMenu"></div>
-
-        <div id="marketModal">
-            <div class="market-header">🛒 ÇİFTÇİ MARKETİ</div>
-            <div id="marketContent" class="market-grid">
-                </div>
-            <button class="btn-close" onclick="uiManager.toggleMarket(false)">Kapat</button>
+    
+    <div id="ui-layer">
+        <div id="top-bar" class="hud-panel">
+            <div id="level-display">LVL 1</div>
+            <div id="xp-display">XP: 0/100</div>
+            <div style="flex-grow: 1;"></div>
+            <div id="coin-display">💰 500</div>
         </div>
 
-        <div id="toastArea"></div>
+        <div id="toast-container"></div>
 
-        <div id="bottomBar" class="hud-panel">
-            <div class="tool-btn" id="btnShop" onclick="uiManager.toggleMarket(true)">🏪</div>
+        <div id="bottom-bar" class="hud-panel">
             </div>
     </div>
 </div>
 
 <script>
 /**
- * PART 1: YARDIMCI SINIFLAR & SABİTLER
+ * PART 1: CONSTANTS & UTILS
+ * Global sabitler ve yardımcı fonksiyonlar.
  */
 
-// Oyun Sabitleri
 const CONFIG = {
-    TILE_SIZE: 64, // Piksel cinsinden kare boyutu
+    TILE_SIZE: 64, // Grid kare boyutu
     GRID_ROWS: 10,
     GRID_COLS: 8,
-    OFFLINE_GROWTH: true, // Oyun kapalıyken büyüme
-    AUTOSAVE_INTERVAL: 5000 // 5 saniyede bir kayıt
+    FPS: 60,
+    DEBUG: false,
+    SAVE_KEY: 'ProFarmSim_V1',
+    AUTOSAVE_INTERVAL: 10000 // 10 saniye
 };
 
-// Ekin Veritabanı (Crop Manager Logic)
-const CROPS = {
-    WHEAT: { id: 'wheat', name: 'Buğday', symbol: '🌾', growthTime: 5000, cost: 0, sellPrice: 2, xp: 1 },
-    CORN:  { id: 'corn',  name: 'Mısır',  symbol: '🌽', growthTime: 10000, cost: 2, sellPrice: 5, xp: 3 },
-    CARROT:{ id: 'carrot',name: 'Havuç',  symbol: '🥕', growthTime: 20000, cost: 5, sellPrice: 12, xp: 6 },
-    PUMPKIN:{id: 'pumpkin',name:'Balkabağı',symbol:'🎃', growthTime: 45000, cost: 10,sellPrice: 30, xp: 12 }
+// Ürün Veritabanı (CropFactory için Data)
+const CROP_DATA = {
+    'wheat': { id: 'wheat', name: 'Buğday', emoji: '🌾', growthTime: 5000, buyPrice: 0, sellPrice: 2, xp: 1, unlockLevel: 1 },
+    'corn': { id: 'corn', name: 'Mısır', emoji: '🌽', growthTime: 10000, buyPrice: 1, sellPrice: 5, xp: 2, unlockLevel: 2 },
+    'carrot': { id: 'carrot', name: 'Havuç', emoji: '🥕', growthTime: 20000, buyPrice: 2, sellPrice: 8, xp: 4, unlockLevel: 3 },
+    'pumpkin': { id: 'pumpkin', name: 'Balkabağı', emoji: '🎃', growthTime: 60000, buyPrice: 5, sellPrice: 20, xp: 10, unlockLevel: 5 },
+    'tree_apple': { id: 'tree_apple', name: 'Elma Ağacı', emoji: '🍎', growthTime: 120000, buyPrice: 50, sellPrice: 15, xp: 20, isTree: true, unlockLevel: 7 }
 };
 
-// 1. INPUT MANAGER (Dokunmatik ve Mouse Birleştirici)
-class InputManager {
-    constructor(canvas) {
-        this.canvas = canvas;
-        this.isDragging = false;
-        this.activePointer = { x: 0, y: 0 };
-        this.dragStartPos = { x: 0, y: 0 };
-        this.listeners = [];
-
-        // Olayları bağla
-        ['mousedown', 'touchstart'].forEach(evt => canvas.addEventListener(evt, e => this.handleStart(e), {passive: false}));
-        ['mousemove', 'touchmove'].forEach(evt => canvas.addEventListener(evt, e => this.handleMove(e), {passive: false}));
-        ['mouseup', 'touchend', 'mouseleave'].forEach(evt => canvas.addEventListener(evt, e => this.handleEnd(e)));
+// Yardımcı Araçlar
+class Utils {
+    static clamp(value, min, max) {
+        return Math.min(Math.max(value, min), max);
     }
 
-    getPointerPos(e) {
-        const rect = this.canvas.getBoundingClientRect();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        // Canvas scale faktörünü hesaba kat
-        const scaleX = this.canvas.width / rect.width;
-        const scaleY = this.canvas.height / rect.height;
+    static randomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    static formatCurrency(amount) {
+        return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    // AABB Çarpışma Testi (Basit Nokta vs Kutu)
+    static pointInRect(x, y, rectX, rectY, rectW, rectH) {
+        return x >= rectX && x <= rectX + rectW && y >= rectY && y <= rectY + rectH;
+    }
+}
+
+// Global Event Bus (Observer Pattern)
+class EventEmitter {
+    constructor() {
+        this.events = {};
+    }
+    on(event, listener) {
+        if (!this.events[event]) this.events[event] = [];
+        this.events[event].push(listener);
+    }
+    emit(event, data) {
+        if (this.events[event]) {
+            this.events[event].forEach(listener => listener(data));
+        }
+    }
+}
+
+// Global Event Emitter Örneği
+const EventBus = new EventEmitter();
+
+</script><script>
+/**
+ * PART 2: ENGINE, ASSETS & INPUT
+ * Oyun döngüsü, asset önbellekleme ve girdi yönetimi.
+ */
+
+// Asset Yöneticisi: Emojileri Bitmap'e çevirir (Performans için kritik)
+class AssetManager {
+    constructor() {
+        this.cache = {};
+        this.ctx = document.createElement('canvas').getContext('2d');
+    }
+
+    // Emojiyi önceden render edip bellekte resim olarak tutar
+    async preRenderEmoji(key, emoji, size = 64) {
+        if (this.cache[key]) return;
+
+        this.ctx.canvas.width = size;
+        this.ctx.canvas.height = size;
+        this.ctx.font = `${size * 0.8}px serif`;
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        
+        // Gölge efekti ekle (Derinlik hissi)
+        this.ctx.shadowColor = "rgba(0,0,0,0.3)";
+        this.ctx.shadowBlur = 5;
+        this.ctx.shadowOffsetX = 3;
+        this.ctx.shadowOffsetY = 3;
+
+        this.ctx.fillText(emoji, size / 2, size / 2 + (size * 0.1));
+        
+        // ImageBitmap oluştur (Modern tarayıcılarda çok hızlıdır)
+        const bitmap = await createImageBitmap(this.ctx.canvas);
+        this.cache[key] = bitmap;
+    }
+
+    get(key) {
+        return this.cache[key];
+    }
+}
+
+// Girdi Sistemi: Mouse ve Touch olaylarını birleştirir
+class InputSystem {
+    constructor(canvas, camera) {
+        this.canvas = canvas;
+        this.camera = camera;
+        this.activePointer = { x: 0, y: 0, isDown: false, id: null };
+        this.rect = canvas.getBoundingClientRect();
+        
+        // Event Listener'lar
+        this.setupEvents();
+    }
+
+    setupEvents() {
+        const events = {
+            start: ['mousedown', 'touchstart'],
+            move: ['mousemove', 'touchmove'],
+            end: ['mouseup', 'touchend', 'mouseleave']
+        };
+
+        // Touch ve Mouse olaylarını normalize et
+        events.start.forEach(e => this.canvas.addEventListener(e, (evt) => this.onStart(evt), { passive: false }));
+        events.move.forEach(e => document.addEventListener(e, (evt) => this.onMove(evt), { passive: false })); // Document dinlenir ki canvas dışına çıkarsa kopmasın
+        events.end.forEach(e => document.addEventListener(e, (evt) => this.onEnd(evt)));
+    }
+
+    getPointerPos(evt) {
+        let x, y;
+        if (evt.touches && evt.touches.length > 0) {
+            x = evt.touches[0].clientX;
+            y = evt.touches[0].clientY;
+        } else {
+            x = evt.clientX;
+            y = evt.clientY;
+        }
+        // Canvas koordinatlarına çevir
+        const scaleX = this.canvas.width / this.rect.width;
+        const scaleY = this.canvas.height / this.rect.height;
+        
         return {
-            x: (clientX - rect.left) * scaleX,
-            y: (clientY - rect.top) * scaleY
+            x: (x - this.rect.left) * scaleX,
+            y: (y - this.rect.top) * scaleY
         };
     }
 
-    handleStart(e) {
-        e.preventDefault(); // Mobilde scrolu engelle
-        this.isDragging = true;
-        this.activePointer = this.getPointerPos(e);
-        this.dragStartPos = { ...this.activePointer };
-        this.emit('start', this.activePointer);
-    }
+    onStart(evt) {
+        evt.preventDefault(); // Scroll engelle
+        if (this.activePointer.isDown) return; // Multitouch'ı şimdilik basit tutuyoruz
 
-    handleMove(e) {
-        e.preventDefault();
-        if(!this.isDragging) return;
-        this.activePointer = this.getPointerPos(e);
-        this.emit('drag', this.activePointer);
-    }
-
-    handleEnd(e) {
-        this.isDragging = false;
-        this.emit('end', this.activePointer);
-    }
-
-    on(event, callback) {
-        this.listeners.push({ event, callback });
-    }
-
-    emit(event, data) {
-        this.listeners.filter(l => l.event === event).forEach(l => l.callback(data));
-    }
-}
-
-// 2. SAVE SYSTEM (LocalStorage Wrapper)
-class SaveSystem {
-    static save(key, data) {
-        try {
-            localStorage.setItem(key, JSON.stringify(data));
-        } catch(e) { console.error("Save Hatası:", e); }
-    }
-    static load(key) {
-        try {
-            const data = localStorage.getItem(key);
-            return data ? JSON.parse(data) : null;
-        } catch(e) { return null; }
-    }
-}
-</script><script>
-/**
- * PART 2: OYUN MANTIK KATMANI (GAME LOGIC)
- */
-
-// 3. OYUNCU ENVANTERİ VE DURUMU
-class PlayerState {
-    constructor() {
-        this.level = 1;
-        this.xp = 0;
-        this.maxXp = 100;
-        this.coins = 50; // Başlangıç parası
-        this.silo = { current: 0, max: 20, items: {} }; // Ekin deposu
+        const pos = this.getPointerPos(evt);
+        this.activePointer.x = pos.x;
+        this.activePointer.y = pos.y;
+        this.activePointer.isDown = true;
         
-        // Başlangıç itemleri
-        this.addItem('wheat', 5); 
+        // UI dışına tıklanıp tıklanmadığı kontrol edilebilir
+        EventBus.emit('INPUT_START', this.worldToGrid(pos.x, pos.y));
     }
 
-    addItem(itemId, amount) {
-        if (this.silo.current + amount > this.silo.max) return false;
-        if (!this.silo.items[itemId]) this.silo.items[itemId] = 0;
-        this.silo.items[itemId] += amount;
-        this.silo.current += amount;
-        uiManager.updateUI(); // UI güncelle
-        return true;
+    onMove(evt) {
+        if (!this.activePointer.isDown) return;
+        evt.preventDefault();
+
+        const pos = this.getPointerPos(evt);
+        this.activePointer.x = pos.x;
+        this.activePointer.y = pos.y;
+
+        // SWIPE TO ACT MANTIĞI BURADA TETİKLENİR
+        // Sürekli olarak parmağın altındaki gridi kontrol et
+        EventBus.emit('INPUT_DRAG', this.worldToGrid(pos.x, pos.y));
     }
 
-    removeItem(itemId, amount) {
-        if (!this.silo.items[itemId] || this.silo.items[itemId] < amount) return false;
-        this.silo.items[itemId] -= amount;
-        this.silo.current -= amount;
-        uiManager.updateUI();
-        return true;
+    onEnd(evt) {
+        if (!this.activePointer.isDown) return;
+        this.activePointer.isDown = false;
+        EventBus.emit('INPUT_END', null);
     }
 
-    addXp(amount) {
-        this.xp += amount;
-        if(this.xp >= this.maxXp) {
-            this.level++;
-            this.xp -= this.maxXp;
-            this.maxXp = Math.floor(this.maxXp * 1.5);
-            uiManager.showToast(`🎉 TEBRİKLER! LEVEL ${this.level}`);
-        }
-        uiManager.updateUI();
-    }
-}
+    // Ekran koordinatlarını Grid koordinatlarına (Row, Col) çevirir
+    worldToGrid(screenX, screenY) {
+        // Kamera ofseti buraya eklenebilir (Scrolling varsa)
+        // Şimdilik basit offset
+        const offsetX = (this.canvas.width - (CONFIG.GRID_COLS * CONFIG.TILE_SIZE)) / 2;
+        const offsetY = (this.canvas.height - (CONFIG.GRID_ROWS * CONFIG.TILE_SIZE)) / 2;
 
-// 4. TILE CLASS (Her bir tarla karesi)
-class Tile {
-    constructor(row, col) {
-        this.row = row;
-        this.col = col;
-        this.state = 'EMPTY'; // EMPTY, PLOWED, SEEDED
-        this.cropId = null;
-        this.plantTime = 0;
-        this.isLocked = false; // İleride arsa genişletme için
-    }
+        const col = Math.floor((screenX - offsetX) / CONFIG.TILE_SIZE);
+        const row = Math.floor((screenY - offsetY) / CONFIG.TILE_SIZE);
 
-    // Ekin Ekme
-    plant(cropId) {
-        if (this.state !== 'EMPTY') return false;
-        this.state = 'SEEDED';
-        this.cropId = cropId;
-        this.plantTime = Date.now();
-        return true;
-    }
-
-    // Hasat Etme
-    harvest() {
-        if (!this.isMature()) return null;
-        const harvestedCrop = this.cropId;
-        this.state = 'EMPTY';
-        this.cropId = null;
-        this.plantTime = 0;
-        return harvestedCrop;
-    }
-
-    // Büyümüş mü?
-    isMature() {
-        if (this.state !== 'SEEDED') return false;
-        const crop = CROPS[this.cropId];
-        return (Date.now() - this.plantTime) >= crop.growthTime;
-    }
-
-    // Büyüme oranı (0.0 - 1.0)
-    getProgress() {
-        if (this.state !== 'SEEDED') return 0;
-        const crop = CROPS[this.cropId];
-        const elapsed = Date.now() - this.plantTime;
-        return Math.min(elapsed / crop.growthTime, 1.0);
+        return { col, row, valid: (col >= 0 && col < CONFIG.GRID_COLS && row >= 0 && row < CONFIG.GRID_ROWS) };
     }
 }
 
-// 5. GRID SYSTEM (Oyun Dünyası)
-class GridSystem {
-    constructor(rows, cols) {
-        this.rows = rows;
-        this.cols = cols;
-        this.tiles = [];
-        this.initGrid();
-    }
-
-    initGrid() {
-        for(let r=0; r<this.rows; r++) {
-            this.tiles[r] = [];
-            for(let c=0; c<this.cols; c++) {
-                this.tiles[r][c] = new Tile(r, c);
-            }
-        }
-    }
-
-    getTile(r, c) {
-        if (r >= 0 && r < this.rows && c >= 0 && c < this.cols) {
-            return this.tiles[r][c];
-        }
-        return null;
-    }
-
-    // Ekran koordinatlarını (px) Grid koordinatlarına (row, col) çevirir
-    pixelsToGrid(x, y, offsetX, offsetY) {
-        const col = Math.floor((x - offsetX) / CONFIG.TILE_SIZE);
-        const row = Math.floor((y - offsetY) / CONFIG.TILE_SIZE);
-        return { row, col };
-    }
-
-    // JSON Kayıt verisinden gridi yükle
-    loadFromData(data) {
-        if(!data) return;
-        for(let r=0; r<this.rows; r++) {
-            for(let c=0; c<this.cols; c++) {
-                if(data[r] && data[r][c]) {
-                    Object.assign(this.tiles[r][c], data[r][c]);
-                }
-            }
-        }
-    }
-}
-</script><script>
-/**
- * PART 3: RENDER, ETKİLEŞİM VE ANA DÖNGÜ
- */
-
-// 6. UI MANAGER (Arayüz Yöneticisi)
-const uiManager = {
-    game: null, // GameEngine referansı
-    
-    init(gameInstance) {
-        this.game = gameInstance;
-        this.updateUI();
-    },
-
-    updateUI() {
-        const p = this.game.player;
-        document.getElementById('uiLevel').innerText = p.level;
-        document.getElementById('uiXp').innerText = `${p.xp}/${p.maxXp}`;
-        document.getElementById('uiCoin').innerText = p.coins;
-        document.getElementById('uiSilo').innerText = `${p.silo.current}/${p.silo.max}`;
-    },
-
-    showToast(msg) {
-        const toast = document.createElement('div');
-        toast.className = 'toast';
-        toast.innerText = msg;
-        document.getElementById('toastArea').appendChild(toast);
-        setTimeout(() => toast.remove(), 2500);
-    },
-
-    // Bağlamsal Menü (Tarlaya tıklayınca çıkan)
-    showContextMenu(tile, screenX, screenY) {
-        const menu = document.getElementById('contextMenu');
-        menu.innerHTML = '';
-        menu.style.display = 'flex';
-        menu.style.left = screenX + 'px';
-        menu.style.top = screenY + 'px';
-
-        // Eğer tarla boşsa -> TOHUM LİSTESİ
-        if (tile.state === 'EMPTY') {
-            const seedIcon = document.createElement('div');
-            seedIcon.className = 'ctx-item';
-            seedIcon.innerText = '🌾'; // Varsayılan tohum (Buğday)
-            // Sürükleme başlangıcı
-            seedIcon.onmousedown = seedIcon.ontouchstart = (e) => {
-                this.game.startToolDrag('SEED', 'wheat', e);
-                menu.style.display = 'none'; // Sürüklerken menüyü gizle
-            };
-            menu.appendChild(seedIcon);
-        }
-        // Eğer ekin varsa ve büyümüşse -> ORAK
-        else if (tile.isMature()) {
-            const scythe = document.createElement('div');
-            scythe.className = 'ctx-item';
-            scythe.innerText = '⚔️'; // Orak emojisi
-            scythe.onmousedown = scythe.ontouchstart = (e) => {
-                this.game.startToolDrag('HARVEST', null, e);
-                menu.style.display = 'none';
-            };
-            menu.appendChild(scythe);
-        } else {
-            // Büyüyor...
-            menu.style.display = 'none';
-        }
-    },
-
-    hideContextMenu() {
-        document.getElementById('contextMenu').style.display = 'none';
-    },
-
-    toggleMarket(show) {
-        const modal = document.getElementById('marketModal');
-        modal.style.display = show ? 'block' : 'none';
-        if(show) this.renderMarket();
-    },
-
-    renderMarket() {
-        const content = document.getElementById('marketContent');
-        content.innerHTML = '';
-        const p = this.game.player;
-
-        // Satılabilir ürünleri listele
-        Object.keys(p.silo.items).forEach(cropId => {
-            const count = p.silo.items[cropId];
-            if(count > 0) {
-                const crop = CROPS[cropId];
-                const div = document.createElement('div');
-                div.className = 'market-item';
-                div.innerHTML = `
-                    <div style="font-size:30px">${crop.symbol}</div>
-                    <div>${crop.name}</div>
-                    <div>Adet: ${count}</div>
-                    <div style="color:green; font-weight:bold">${crop.sellPrice} Altın</div>
-                `;
-                div.onclick = () => {
-                    this.game.sellItem(cropId);
-                    this.renderMarket(); // Listeyi yenile
-                };
-                content.appendChild(div);
-            }
-        });
-        
-        if(content.innerHTML === '') content.innerHTML = '<p>Satılacak ürün yok!</p>';
-    }
-};
-
-// 7. GAME ENGINE (Ana Oyun Motoru)
+// Ana Oyun Motoru: Loop ve DeltaTime yönetimi
 class GameEngine {
     constructor() {
+        this.lastTime = 0;
+        this.accumulatedTime = 0;
+        this.deltaTime = 1 / CONFIG.FPS;
         this.canvas = document.getElementById('gameCanvas');
-        this.ctx = this.canvas.getContext('2d', { alpha: false }); // Optimizasyon
-        this.input = new InputManager(this.canvas);
+        this.ctx = this.canvas.getContext('2d', { alpha: false }); // Alpha false performans artırır
         
-        // Ekran boyutlandırma
         this.resize();
         window.addEventListener('resize', () => this.resize());
 
-        // Sistemler
-        this.grid = new GridSystem(CONFIG.GRID_ROWS, CONFIG.GRID_COLS);
-        this.player = new PlayerState();
+        this.assets = new AssetManager();
+        this.isRunning = false;
         
-        // Save Yükle
-        this.loadGame();
-
-        // Drag Mekaniği Durumları
-        this.activeTool = null; // 'SEED', 'HARVEST'
-        this.activeToolSubtype = null; // 'wheat', 'corn' vb.
-        this.dragPath = []; // Görsel efekt için yol
-
-        // Input Bağlantıları
-        this.input.on('start', (pos) => this.handleInputStart(pos));
-        this.input.on('drag', (pos) => this.handleInputDrag(pos));
-        this.input.on('end', () => this.handleInputEnd());
-
-        // Başlat
-        this.lastTime = 0;
-        requestAnimationFrame(t => this.loop(t));
-        
-        // Auto Save
-        setInterval(() => this.saveGame(), CONFIG.AUTOSAVE_INTERVAL);
-        uiManager.init(this);
+        // Oyun bileşenleri (Sonraki partlarda dolacak)
+        this.gridSystem = null; 
+        this.particleSystem = null;
+        this.uiManager = null;
     }
 
     resize() {
-        // High DPI Support
+        // Retina ekranlar için DPI ayarı
         const dpr = window.devicePixelRatio || 1;
         this.canvas.width = window.innerWidth * dpr;
         this.canvas.height = window.innerHeight * dpr;
         this.ctx.scale(dpr, dpr);
         
-        // Grid'i ortalamak için offset hesapla
-        this.offsetX = (window.innerWidth - (CONFIG.GRID_COLS * CONFIG.TILE_SIZE)) / 2;
-        this.offsetY = (window.innerHeight - (CONFIG.GRID_ROWS * CONFIG.TILE_SIZE)) / 2;
+        // Input sistemi için rect'i güncelle
+        if(this.inputSystem) this.inputSystem.rect = this.canvas.getBoundingClientRect();
     }
 
-    // --- ETKİLEŞİM MANTIĞI (TOOL DRAG) ---
-    
-    startToolDrag(toolType, subType, event) {
-        this.activeTool = toolType;
-        this.activeToolSubtype = subType;
-        // InputManager'ı manuel tetikle çünkü event context menüden geldi
-        this.input.handleStart(event);
-    }
-
-    handleInputStart(pos) {
-        // Eğer bir araç seçili değilse, tıklanan tarlayı bul
-        if (!this.activeTool) {
-            const {row, col} = this.grid.pixelsToGrid(pos.x, pos.y, this.offsetX, this.offsetY);
-            const tile = this.grid.getTile(row, col);
-            
-            if (tile) {
-                uiManager.showContextMenu(tile, pos.x + this.offsetX/2, pos.y); // Basit pozisyonlama
-            } else {
-                uiManager.hideContextMenu();
-            }
+    async init() {
+        // Kritik assetleri yükle
+        await this.assets.preRenderEmoji('dirt', '🟫');
+        await this.assets.preRenderEmoji('plowed', '🏾');
+        
+        // Ekinleri yükle
+        for (let key in CROP_DATA) {
+            await this.assets.preRenderEmoji(key, CROP_DATA[key].emoji);
+            // Olgunlaşmış hali (Daha büyük veya parlak olabilir, şimdilik aynısı)
+            await this.assets.preRenderEmoji(key + '_ripe', CROP_DATA[key].emoji, 72); 
+            // Tohum hali
+            await this.assets.preRenderEmoji('seed', '🌰', 32); 
         }
+        
+        this.start();
     }
 
-    handleInputDrag(pos) {
-        if (this.activeTool) {
-            // Raycasting: Parmağın altındaki tarlayı bul
-            const {row, col} = this.grid.pixelsToGrid(pos.x, pos.y, this.offsetX, this.offsetY);
-            const tile = this.grid.getTile(row, col);
-            
-            if (tile) {
-                this.applyToolToTile(tile);
-            }
-            
-            // Efekt için yol izi (basit çizgi)
-            this.dragPath.push(pos);
-            if(this.dragPath.length > 10) this.dragPath.shift();
-        }
+    start() {
+        this.isRunning = true;
+        this.lastTime = performance.now();
+        requestAnimationFrame((t) => this.loop(t));
     }
-
-    handleInputEnd() {
-        this.activeTool = null;
-        this.activeToolSubtype = null;
-        this.dragPath = [];
-        uiManager.hideContextMenu();
-    }
-
-    applyToolToTile(tile) {
-        // 1. HASAT MANTIĞI
-        if (this.activeTool === 'HARVEST') {
-            if (tile.isMature()) {
-                const cropId = tile.harvest();
-                if (cropId) {
-                    // Depo kontrolü
-                    if (this.player.addItem(cropId, 1)) {
-                        this.player.addXp(CROPS[cropId].xp);
-                        // Efekt (yazılı)
-                        // Partikül sistemi eklenebilir
-                    } else {
-                        uiManager.showToast("Depo Dolu!");
-                    }
-                }
-            }
-        }
-        // 2. EKİM MANTIĞI
-        else if (this.activeTool === 'SEED') {
-            if (tile.state === 'EMPTY') {
-                const seedId = this.activeToolSubtype;
-                const seedCost = CROPS[seedId].cost; // İsterseniz tohum parayla satılabilir
-                // Veya envanterden tohum eksiltme mantığı
-                if (this.player.silo.items[seedId] >= 1 || seedCost === 0) {
-                     tile.plant(seedId);
-                     // Tohum düş (eğer mantık buysa)
-                }
-            }
-        }
-    }
-    
-    sellItem(cropId) {
-        if(this.player.removeItem(cropId, 1)) {
-            const price = CROPS[cropId].sellPrice;
-            this.player.coins += price;
-            uiManager.updateUI();
-            uiManager.showToast(`+${price} Altın`);
-        }
-    }
-
-    // --- RENDER DÖNGÜSÜ ---
 
     loop(timestamp) {
-        const dt = timestamp - this.lastTime;
+        if (!this.isRunning) return;
+
+        const frameTime = (timestamp - this.lastTime) / 1000;
         this.lastTime = timestamp;
 
-        this.update(dt);
-        this.draw();
+        // Update (Sabit timestep opsiyonel, burada basit delta kullanıyoruz)
+        this.update(frameTime);
 
-        requestAnimationFrame(t => this.loop(t));
+        // Render
+        this.render();
+
+        requestAnimationFrame((t) => this.loop(t));
     }
 
     update(dt) {
-        // Animasyonlar vs buraya
+        if (this.gridSystem) this.gridSystem.update(dt);
+        if (this.particleSystem) this.particleSystem.update(dt);
     }
 
-    draw() {
-        // 1. Arkaplanı Temizle
-        this.ctx.fillStyle = '#8fbc8f'; // Çim rengi
-        this.ctx.fillRect(0, 0, this.canvas.width/window.devicePixelRatio, this.canvas.height/window.devicePixelRatio);
+    render() {
+        // Arka planı temizle
+        this.ctx.fillStyle = '#57c1eb';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // 2. Grid Çizimi
-        const ts = CONFIG.TILE_SIZE;
+        // Sahneyi çiz
+        if (this.gridSystem) this.gridSystem.render(this.ctx);
+        if (this.particleSystem) this.particleSystem.render(this.ctx);
+    }
+}
+</script><script>
+/**
+ * PART 3: GRID, CROPS & ECONOMY
+ * Oyun mantığı, veri yapıları ve ekin yönetimi.
+ */
+
+class EconomySystem {
+    constructor() {
+        this.coins = 500;
+        this.xp = 0;
+        this.level = 1;
+        this.maxXp = 100;
+    }
+
+    addXp(amount) {
+        this.xp += amount;
+        if (this.xp >= this.maxXp) {
+            this.levelUp();
+        }
+        EventBus.emit('UI_UPDATE', this);
+    }
+
+    levelUp() {
+        this.level++;
+        this.xp -= this.maxXp;
+        this.maxXp = Math.floor(this.maxXp * 1.5);
+        EventBus.emit('TOAST', `TEBRİKLER! SEVİYE ${this.level}`);
+        // Ses efekti burada çalınabilir
+    }
+
+    spendCoins(amount) {
+        if (this.coins >= amount) {
+            this.coins -= amount;
+            EventBus.emit('UI_UPDATE', this);
+            return true;
+        }
+        return false;
+    }
+
+    addCoins(amount) {
+        this.coins += amount;
+        EventBus.emit('UI_UPDATE', this);
+    }
+}
+
+class InventorySystem {
+    constructor() {
+        this.items = {}; // { 'wheat': 5, 'corn': 0 }
+    }
+
+    add(itemId, count) {
+        if (!this.items[itemId]) this.items[itemId] = 0;
+        this.items[itemId] += count;
+        EventBus.emit('UI_UPDATE', null); // UI envanter sayısını güncellesin
+    }
+
+    has(itemId, count = 1) {
+        return (this.items[itemId] || 0) >= count;
+    }
+
+    remove(itemId, count) {
+        if (this.has(itemId, count)) {
+            this.items[itemId] -= count;
+            EventBus.emit('UI_UPDATE', null);
+            return true;
+        }
+        return false;
+    }
+}
+
+// Tek bir kareyi temsil eden sınıf
+class Tile {
+    constructor(row, col) {
+        this.row = row;
+        this.col = col;
+        this.state = 'EMPTY'; // EMPTY, PLOWED, GROWING, RIPE, WITHERED
+        this.cropType = null;
+        this.plantTime = 0;
+    }
+}
+
+class GridSystem {
+    constructor(game) {
+        this.game = game;
+        this.rows = CONFIG.GRID_ROWS;
+        this.cols = CONFIG.GRID_COLS;
+        this.tiles = [];
+        this.offsetX = 0;
+        this.offsetY = 0;
+
+        // Aktif araç (UI'dan seçilen)
+        this.currentTool = 'cursor'; // cursor, sickle, water, seed_wheat, etc.
+
+        this.initGrid();
+        this.setupListeners();
+    }
+
+    initGrid() {
+        for (let r = 0; r < this.rows; r++) {
+            this.tiles[r] = [];
+            for (let c = 0; c < this.cols; c++) {
+                this.tiles[r][c] = new Tile(r, c);
+            }
+        }
+        this.centerGrid();
+    }
+
+    centerGrid() {
+        // Gridi ekranın ortasına al
+        const gridW = this.cols * CONFIG.TILE_SIZE;
+        const gridH = this.rows * CONFIG.TILE_SIZE;
+        this.offsetX = (this.game.canvas.width / window.devicePixelRatio - gridW) / 2;
+        this.offsetY = (this.game.canvas.height / window.devicePixelRatio - gridH) / 2;
+    }
+
+    setupListeners() {
+        // Kullanıcı bir araca tıkladığında
+        EventBus.on('TOOL_SELECTED', (toolId) => {
+            this.currentTool = toolId;
+            console.log("Tool Selected:", toolId);
+        });
+
+        // Swipe hareketi algılandığında
+        EventBus.on('INPUT_DRAG', (gridPos) => {
+            if (gridPos.valid) {
+                this.interact(gridPos.row, gridPos.col);
+            }
+        });
         
-        for(let r=0; r<CONFIG.GRID_ROWS; r++) {
-            for(let c=0; c<CONFIG.GRID_COLS; c++) {
-                const tile = this.grid.tiles[r][c];
-                const x = this.offsetX + c * ts;
-                const y = this.offsetY + r * ts;
+        // Tıklama algılandığında (Tek seferlik işlem)
+        EventBus.on('INPUT_START', (gridPos) => {
+            if (gridPos.valid) {
+                this.interact(gridPos.row, gridPos.col);
+            }
+        });
+    }
 
-                // Tarlanın Kendisi
-                this.ctx.fillStyle = (tile.state === 'EMPTY') ? '#795548' : '#5d4037'; // Açık/Koyu Kahve
-                this.ctx.fillRect(x + 2, y + 2, ts - 4, ts - 4); // Grid boşluğu için padding
-                
-                // İçerik
-                if (tile.state !== 'EMPTY' && tile.cropId) {
-                    const crop = CROPS[tile.cropId];
-                    const progress = tile.getProgress();
-                    
-                    // Progress Bar (Sadece büyürken)
-                    if (progress < 1) {
-                        this.ctx.fillStyle = '#ccc';
-                        this.ctx.fillRect(x + 5, y + ts - 10, ts - 10, 5);
-                        this.ctx.fillStyle = '#76ff03';
-                        this.ctx.fillRect(x + 5, y + ts - 10, (ts - 10) * progress, 5);
-                        
-                        // Küçük emoji
-                        this.ctx.font = '20px Arial';
-                        this.ctx.fillText(crop.symbol, x + ts/2 - 10, y + ts/2);
-                    } 
-                    // Büyümüş Ekin
-                    else {
-                        this.ctx.font = '40px Arial';
-                        // Hafif sallanma efekti (canlılık için)
-                        const wobble = Math.sin(Date.now() / 200) * 2;
-                        this.ctx.fillText(crop.symbol, x + ts/2 - 20, y + ts/2 + 10 + wobble);
+    // OYUNUN KALBİ: Etkileşim Mantığı
+    interact(r, c) {
+        const tile = this.tiles[r][c];
+        const now = Date.now();
+
+        // 1. HASAT ETME (Orak Aracı)
+        if (this.currentTool === 'sickle') {
+            if (tile.state === 'RIPE') {
+                this.harvest(tile);
+            }
+        }
+        // 2. EKİM YAPMA (Tohum Seçiliyse)
+        else if (this.currentTool.startsWith('seed_')) {
+            const cropId = this.currentTool.split('_')[1]; // seed_wheat -> wheat
+            
+            // Eğer boşsa önce sürülmeli, eğer sürülmüşse ekilebilir
+            // Basitleştirmek için: Boşsa direkt eker ve sürer (Hay Day tarzı)
+            if (tile.state === 'EMPTY' || tile.state === 'PLOWED') {
+                this.plant(tile, cropId);
+            }
+        }
+    }
+
+    plant(tile, cropId) {
+        const crop = CROP_DATA[cropId];
+        // Para kontrolü
+        if (!this.game.economy.spendCoins(crop.buyPrice)) {
+            EventBus.emit('TOAST', 'Yetersiz Para!');
+            return;
+        }
+
+        tile.state = 'GROWING';
+        tile.cropType = cropId;
+        tile.plantTime = Date.now();
+        
+        // Partikül efekti
+        EventBus.emit('SPAWN_PARTICLE', { 
+            x: this.offsetX + tile.col * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE/2, 
+            y: this.offsetY + tile.row * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE/2,
+            type: 'dust'
+        });
+    }
+
+    harvest(tile) {
+        const crop = CROP_DATA[tile.cropType];
+        
+        // Ürünü ver
+        this.game.inventory.add(crop.id, 1);
+        
+        // XP ve Para (Para satılınca kazanılır ama XP hasatta gelir)
+        this.game.economy.addXp(crop.xp);
+        
+        // Tile'ı sıfırla
+        tile.state = 'EMPTY'; // Veya 'PLOWED' olarak kalabilir
+        tile.cropType = null;
+
+        // Görsel Geri Bildirim (Juice)
+        const centerX = this.offsetX + tile.col * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE/2;
+        const centerY = this.offsetY + tile.row * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE/2;
+
+        EventBus.emit('SPAWN_PARTICLE', { x: centerX, y: centerY, type: 'text', text: `+${crop.xp} XP` });
+        EventBus.emit('SPAWN_PARTICLE', { x: centerX, y: centerY, type: 'item', emoji: crop.emoji });
+    }
+
+    update(dt) {
+        // Ekin büyüme kontrolü
+        const now = Date.now();
+        for (let r = 0; r < this.rows; r++) {
+            for (let c = 0; c < this.cols; c++) {
+                const tile = this.tiles[r][c];
+                if (tile.state === 'GROWING') {
+                    const crop = CROP_DATA[tile.cropType];
+                    if (now - tile.plantTime >= crop.growthTime) {
+                        tile.state = 'RIPE';
                     }
                 }
             }
         }
+    }
 
-        // 3. Drag Efekti (Sürükleme Çizgisi)
-        if (this.activeTool && this.dragPath.length > 0) {
-            this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-            this.ctx.lineWidth = 10;
-            this.ctx.lineCap = 'round';
-            this.ctx.beginPath();
-            this.dragPath.forEach((p, i) => {
-                if(i===0) this.ctx.moveTo(p.x, p.y);
-                else this.ctx.lineTo(p.x, p.y);
-            });
-            this.ctx.stroke();
-            
-            // İmleç ucuna aracı çiz
-            const lastPos = this.dragPath[this.dragPath.length-1];
-            this.ctx.font = '30px Arial';
-            this.ctx.fillText(this.activeTool === 'HARVEST' ? '⚔️' : '🌾', lastPos.x, lastPos.y);
+    render(ctx) {
+        const ts = CONFIG.TILE_SIZE;
+
+        for (let r = 0; r < this.rows; r++) {
+            for (let c = 0; c < this.cols; c++) {
+                const tile = this.tiles[r][c];
+                const x = this.offsetX + c * ts;
+                const y = this.offsetY + r * ts;
+
+                // 1. Zemin Çizimi
+                const groundImg = this.game.assets.get('dirt');
+                if (groundImg) ctx.drawImage(groundImg, x, y, ts, ts);
+
+                // Grid çizgileri (Opsiyonel, debug veya stil için)
+                ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+                ctx.strokeRect(x, y, ts, ts);
+
+                // 2. Durum Çizimi
+                if (tile.state === 'PLOWED') {
+                    const plowed = this.game.assets.get('plowed');
+                    if (plowed) ctx.drawImage(plowed, x, y, ts, ts);
+                }
+                else if (tile.state === 'GROWING') {
+                    const crop = CROP_DATA[tile.cropType];
+                    const seedImg = this.game.assets.get('seed');
+                    
+                    // Büyüme oranına göre boyutlandırma (Lerp)
+                    const now = Date.now();
+                    const progress = Math.min(1, (now - tile.plantTime) / crop.growthTime);
+                    
+                    // Basit bir scale animasyonu
+                    const size = ts * (0.3 + (progress * 0.4)); 
+                    const offset = (ts - size) / 2;
+                    
+                    if (seedImg) ctx.drawImage(seedImg, x + offset, y + offset, size, size);
+                    
+                    // Progress bar (Sadece büyürken)
+                    if (progress < 1) {
+                        ctx.fillStyle = '#333';
+                        ctx.fillRect(x + 5, y + ts - 10, ts - 10, 4);
+                        ctx.fillStyle = '#0f0';
+                        ctx.fillRect(x + 5, y + ts - 10, (ts - 10) * progress, 4);
+                    }
+                }
+                else if (tile.state === 'RIPE') {
+                    const crop = CROP_DATA[tile.cropType];
+                    const ripeImg = this.game.assets.get(tile.cropType + '_ripe'); // Büyük görsel
+                    // Sallanma animasyonu (Wind effect)
+                    const sway = Math.sin(Date.now() / 200) * 2;
+                    
+                    if (ripeImg) ctx.drawImage(ripeImg, x + sway, y, ts, ts);
+                }
+            }
+        }
+        
+        // Seçili kare vurgusu (Eğer mouse basılıysa)
+        if (this.game.inputSystem.activePointer.isDown) {
+            const pos = this.game.inputSystem.worldToGrid(this.game.inputSystem.activePointer.x, this.game.inputSystem.activePointer.y);
+            if (pos.valid) {
+                const x = this.offsetX + pos.col * ts;
+                const y = this.offsetY + pos.row * ts;
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.lineWidth = 4;
+                ctx.strokeRect(x, y, ts, ts);
+            }
+        }
+    }
+}
+</script><script>
+/**
+ * PART 4: FX, UI, SAVE & MAIN
+ * Partikül efektleri, arayüz yönetimi ve başlatıcı kod.
+ */
+
+// Basit Partikül Motoru (Visual Juice)
+class ParticleSystem {
+    constructor() {
+        this.particles = [];
+    }
+
+    spawn(config) {
+        // config: { x, y, type, text, emoji }
+        this.particles.push({
+            x: config.x,
+            y: config.y,
+            vx: (Math.random() - 0.5) * 2, // Sağa sola saçılma
+            vy: -2 - Math.random() * 2,    // Yukarı fırlama
+            life: 1.0,                     // 1 saniye ömür
+            type: config.type,
+            text: config.text || '',
+            emoji: config.emoji || ''
+        });
+    }
+
+    update(dt) {
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+            let p = this.particles[i];
+            p.life -= dt;
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 5 * dt; // Yerçekimi
+
+            if (p.life <= 0) {
+                this.particles.splice(i, 1);
+            }
         }
     }
 
-    // --- SAVE / LOAD ---
-    saveGame() {
-        const data = {
-            player: this.player,
-            grid: this.grid.tiles,
-            timestamp: Date.now()
-        };
-        SaveSystem.save('farmSaveV1', data);
-        console.log("Oyun Kaydedildi.");
+    render(ctx) {
+        ctx.font = "bold 20px Arial";
+        ctx.textAlign = "center";
+
+        this.particles.forEach(p => {
+            ctx.globalAlpha = Utils.clamp(p.life, 0, 1);
+            
+            if (p.type === 'text') {
+                ctx.fillStyle = "white";
+                ctx.strokeStyle = "black";
+                ctx.lineWidth = 2;
+                ctx.strokeText(p.text, p.x, p.y);
+                ctx.fillText(p.text, p.x, p.y);
+            } else if (p.type === 'item') {
+                ctx.font = "30px Arial";
+                ctx.fillText(p.emoji, p.x, p.y);
+            } else if (p.type === 'dust') {
+                ctx.fillStyle = "rgba(200, 200, 100, 0.5)";
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        });
+        ctx.globalAlpha = 1.0;
+    }
+}
+
+class SaveManager {
+    constructor(game) {
+        this.game = game;
     }
 
-    loadGame() {
-        const data = SaveSystem.load('farmSaveV1');
-        if (data) {
-            // Player verisini yükle (Object.assign yüzeysel kalabilir, manuel set daha güvenli)
-            Object.assign(this.player, data.player);
-            // Silo itemleri bazen kaybolabilir, kontrol et
-            if(!this.player.silo.items) this.player.silo.items = {};
+    save() {
+        const data = {
+            tiles: this.game.gridSystem.tiles.map(row => row.map(t => ({
+                s: t.state, c: t.cropType, p: t.plantTime
+            }))),
+            eco: { coins: this.game.economy.coins, xp: this.game.economy.xp, lvl: this.game.economy.level },
+            inv: this.game.inventory.items,
+            time: Date.now()
+        };
+        localStorage.setItem(CONFIG.SAVE_KEY, JSON.stringify(data));
+        EventBus.emit('TOAST', 'Oyun Kaydedildi');
+    }
+
+    load() {
+        const raw = localStorage.getItem(CONFIG.SAVE_KEY);
+        if (!raw) return false;
+
+        try {
+            const data = JSON.parse(raw);
             
-            // Grid verisini yükle
-            this.grid.loadFromData(data.grid);
-            
-            uiManager.showToast("Oyun Yüklendi!");
+            // Economy Yükle
+            this.game.economy.coins = data.eco.coins;
+            this.game.economy.xp = data.eco.xp;
+            this.game.economy.level = data.eco.lvl;
+
+            // Inventory Yükle
+            this.game.inventory.items = data.inv || {};
+
+            // Grid Yükle (OFFLINE HESAPLAMA)
+            const timeDiff = Date.now() - data.time;
+            if (timeDiff > 10000) {
+                 EventBus.emit('TOAST', `Sen yokken ${Math.floor(timeDiff/1000)}sn geçti!`);
+            }
+
+            for (let r = 0; r < CONFIG.GRID_ROWS; r++) {
+                for (let c = 0; c < CONFIG.GRID_COLS; c++) {
+                    const tData = data.tiles[r][c];
+                    const tile = this.game.gridSystem.tiles[r][c];
+                    tile.state = tData.s;
+                    tile.cropType = tData.c;
+                    tile.plantTime = tData.p; // Zaman olduğu gibi yüklenir, oyun döngüsü farkı hesaplar
+                }
+            }
+            return true;
+        } catch (e) {
+            console.error("Save dosyası bozuk", e);
+            return false;
         }
     }
 }
 
-// OYUNU BAŞLAT
-window.onload = () => {
-    const game = new GameEngine();
+class UIManager {
+    constructor(game) {
+        this.game = game;
+        this.elTopBar = {
+            lvl: document.getElementById('level-display'),
+            xp: document.getElementById('xp-display'),
+            coin: document.getElementById('coin-display')
+        };
+        this.elBottomBar = document.getElementById('bottom-bar');
+        this.toastContainer = document.getElementById('toast-container');
+
+        this.buildToolbar();
+        this.updateLabels();
+
+        // Event Dinleyicileri
+        EventBus.on('UI_UPDATE', () => this.updateLabels());
+        EventBus.on('TOAST', (msg) => this.showToast(msg));
+        EventBus.on('SPAWN_PARTICLE', (cfg) => this.game.particleSystem.spawn(cfg));
+    }
+
+    buildToolbar() {
+        const tools = [
+            { id: 'sickle', emoji: '🪓', label: 'Hasat' }, // Hasat için Orak (Axe emojisi görsel olarak yakın)
+            { id: 'seed_wheat', emoji: '🌾', label: 'Buğday', crop: 'wheat' },
+            { id: 'seed_corn', emoji: '🌽', label: 'Mısır', crop: 'corn' },
+            { id: 'seed_carrot', emoji: '🥕', label: 'Havuç', crop: 'carrot' },
+            { id: 'seed_pumpkin', emoji: '🎃', label: 'Kabak', crop: 'pumpkin' }
+        ];
+
+        tools.forEach(tool => {
+            const btn = document.createElement('div');
+            btn.className = 'tool-btn';
+            btn.innerHTML = tool.emoji;
+            btn.onclick = () => {
+                // Active class yönetimi
+                document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                EventBus.emit('TOOL_SELECTED', tool.id);
+            };
+            
+            // Eğer ürünse, stok miktarını badge olarak ekle (İleri seviye özellik)
+            if (tool.crop) {
+               // Badge ekleme kodu buraya gelebilir
+            }
+
+            this.elBottomBar.appendChild(btn);
+        });
+
+        // Varsayılan olarak ilk aracı seç
+        this.elBottomBar.firstChild.click();
+    }
+
+    updateLabels() {
+        const eco = this.game.economy;
+        this.elTopBar.lvl.innerText = `LVL ${eco.level}`;
+        this.elTopBar.xp.innerText = `XP: ${eco.xp}/${eco.maxXp}`;
+        this.elTopBar.coin.innerText = `💰 ${Utils.formatCurrency(eco.coins)}`;
+    }
+
+    showToast(msg) {
+        const el = document.createElement('div');
+        el.className = 'toast';
+        el.innerText = msg;
+        this.toastContainer.appendChild(el);
+        setTimeout(() => el.remove(), 2100); // CSS animasyonundan biraz uzun
+    }
+}
+
+// ----------------------------------------------------
+// MAIN BOOTSTRAPPER (BAŞLATICI)
+// ----------------------------------------------------
+window.onload = async () => {
+    try {
+        const game = new GameEngine();
+        
+        // Alt Sistemlerin Bağlanması
+        game.economy = new EconomySystem();
+        game.inventory = new InventorySystem();
+        game.inputSystem = new InputSystem(game.canvas);
+        
+        // Assetler yüklendikten sonra Grid oluşmalı
+        await game.init(); 
+
+        game.gridSystem = new GridSystem(game);
+        game.particleSystem = new ParticleSystem();
+        game.uiManager = new UIManager(game);
+        game.saveManager = new SaveManager(game);
+
+        // Kayıt Yükle veya Yeni Başlat
+        if (!game.saveManager.load()) {
+            EventBus.emit('TOAST', 'Yeni Çiftliğine Hoşgeldin!');
+        }
+
+        // Autosave döngüsü
+        setInterval(() => game.saveManager.save(), CONFIG.AUTOSAVE_INTERVAL);
+
+    } catch (err) {
+        alert("Oyun başlatılırken kritik hata: " + err.message);
+        console.error(err);
+    }
 };
 
 </script>
