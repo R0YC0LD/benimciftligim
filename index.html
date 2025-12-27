@@ -5,994 +5,762 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#2d3436">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Pou: Ultimate Life</title>
+    <title>Pou: Ultimate Life v3</title>
     <style>
         /* =========================================
-           1. RESET & CORE SETTINGS
+           1. CORE STYLES
            ========================================= */
         :root {
-            --primary: #fdcb6e;
-            --accent: #e17055;
-            --ui-bg: rgba(255, 255, 255, 0.85);
-            --ui-border: rgba(255, 255, 255, 0.4);
-            --shadow-soft: 0 10px 25px rgba(0,0,0,0.1);
-            --shadow-hard: 0 5px 0 rgba(0,0,0,0.2);
-            --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --font: 'Segoe UI', system-ui, sans-serif;
             --safe-bottom: env(safe-area-inset-bottom, 20px);
         }
-
-        * {
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-
+        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         body {
-            margin: 0; padding: 0;
-            width: 100vw; 
-            height: 100dvh; /* Dynamic Height for Mobile */
-            overflow: hidden;
-            font-family: var(--font);
-            background: #222;
+            margin: 0; padding: 0; width: 100vw; height: 100dvh;
+            overflow: hidden; background: #222; font-family: var(--font);
             touch-action: none;
         }
 
         /* =========================================
-           2. ROOM BACKGROUNDS (PURE CSS ART)
+           2. ROOMS & BACKGROUNDS
            ========================================= */
         #world-track {
-            display: flex;
-            width: 500vw; height: 100%;
-            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-            will-change: transform;
+            display: flex; width: 500vw; height: 100%;
+            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
-
         .room {
-            width: 100vw; height: 100%;
-            position: relative;
-            overflow: hidden;
+            width: 100vw; height: 100%; position: relative;
+            display: flex; flex-direction: column; align-items: center;
+            border-right: 2px solid rgba(0,0,0,0.1);
         }
 
-        /* 0: Bedroom (Yıldızlı Duvar Kağıdı + Halı) */
+        /* ODA 0: YATAK ODASI (Mavi & Yıldızlar) */
         .room-0 {
             background-color: #6c5ce7;
-            background-image: 
-                radial-gradient(white 2px, transparent 2px),
-                radial-gradient(rgba(255,255,255,.5) 1px, transparent 1px);
-            background-size: 50px 50px;
-            background-position: 0 0, 25px 25px;
-            box-shadow: inset 0 -100px 100px rgba(0,0,0,0.2);
+            background-image: radial-gradient(white 2px, transparent 2px);
+            background-size: 40px 40px;
         }
         .room-0::after { /* Zemin */
-            content: ''; position: absolute; bottom: 0; width: 100%; height: 30%;
-            background: #a29bfe;
-            border-top: 10px solid #5f27cd;
+            content: ''; position: absolute; bottom: 0; width: 100%; height: 35%;
+            background: #a29bfe; border-top: 15px solid #4834d4;
         }
 
-        /* 1: Hall (Ahşap Parke + Çizgili Duvar) */
+        /* ODA 1: SALON (Sarı & Çizgili) */
         .room-1 {
-            background-color: #ffeaa7;
-            background-image: linear-gradient(90deg, rgba(0,0,0,0.05) 50%, transparent 50%);
-            background-size: 100px 100%;
+            background-color: #f1c40f;
+            background-image: linear-gradient(90deg, rgba(255,255,255,0.3) 50%, transparent 50%);
+            background-size: 60px 100%;
         }
-        .room-1::after { /* Parke Zemin */
-            content: ''; position: absolute; bottom: 0; width: 100%; height: 25%;
-            background: 
-                linear-gradient(45deg, #e67e22 25%, transparent 25%, transparent 75%, #e67e22 75%, #e67e22),
-                linear-gradient(45deg, #e67e22 25%, transparent 25%, transparent 75%, #e67e22 75%, #e67e22);
-            background-color: #d35400;
-            background-size: 20px 20px;
-            background-position: 0 0, 10px 10px;
-            border-top: 5px solid #8e44ad;
+        .room-1::after { /* Parke */
+            content: ''; position: absolute; bottom: 0; width: 100%; height: 30%;
+            background: #d35400; border-top: 15px solid #e67e22;
         }
 
-        /* 2: Kitchen (Kareli Zemin + Mutfak Fayansı) */
+        /* ODA 2: MUTFAK (Pembe & Kareli) */
         .room-2 {
             background-color: #ff7675;
-            background-image: 
-                linear-gradient(rgba(255,255,255,0.2) 2px, transparent 2px),
-                linear-gradient(90deg, rgba(255,255,255,0.2) 2px, transparent 2px);
+            background-image: linear-gradient(rgba(255,255,255,0.3) 2px, transparent 2px),
+                              linear-gradient(90deg, rgba(255,255,255,0.3) 2px, transparent 2px);
             background-size: 50px 50px;
         }
-        .room-2::after { /* Checkerboard Zemin */
-            content: ''; position: absolute; bottom: 0; width: 100%; height: 30%;
-            background-image: 
-                linear-gradient(45deg, #b2bec3 25%, transparent 25%), 
-                linear-gradient(-45deg, #b2bec3 25%, transparent 25%), 
-                linear-gradient(45deg, transparent 75%, #b2bec3 75%), 
-                linear-gradient(-45deg, transparent 75%, #b2bec3 75%);
-            background-size: 40px 40px;
-            background-color: #fff;
-            border-top: 8px solid #d63031;
+        .room-2::after { /* Fayans Zemin */
+            content: ''; position: absolute; bottom: 0; width: 100%; height: 35%;
+            background: #fff;
+            background-image: linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%), 
+                              linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%);
+            background-position: 0 0, 20px 20px; background-size: 40px 40px;
+            border-top: 15px solid #d63031;
         }
 
-        /* 3: Bathroom (Mavi Fayanslar) */
+        /* ODA 3: BANYO (Turkuaz Fayans) */
         .room-3 {
-            background-color: #74b9ff;
-            background-image: 
-                linear-gradient(335deg, rgba(255,255,255,0.1) 23px, transparent 23px),
-                linear-gradient(155deg, rgba(255,255,255,0.1) 23px, transparent 23px),
-                linear-gradient(335deg, rgba(255,255,255,0.1) 23px, transparent 23px),
-                linear-gradient(155deg, rgba(255,255,255,0.1) 23px, transparent 23px);
-            background-size: 58px 58px;
-            background-position: 0px 2px, 4px 35px, 29px 31px, 34px 6px;
+            background-color: #81ecec;
+            background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.3) 10px, rgba(255,255,255,0.3) 20px);
         }
         .room-3::after { /* Parlak Zemin */
-            content: ''; position: absolute; bottom: 0; width: 100%; height: 25%;
-            background: linear-gradient(to bottom, #81ecec, #00cec9);
-            border-top: 10px solid white;
+            content: ''; position: absolute; bottom: 0; width: 100%; height: 30%;
+            background: #00cec9; border-top: 15px solid #fff;
         }
 
-        /* 4: Game Room (Neon / Retro) */
+        /* ODA 4: OYUN ODASI (Koyu & Neon) */
         .room-4 {
-            background: #2d3436;
-            background-image: 
-                linear-gradient(rgba(0, 255, 100, 0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 255, 100, 0.1) 1px, transparent 1px);
-            background-size: 40px 40px;
+            background-color: #2d3436;
+            background-image: radial-gradient(#00b894 3px, transparent 3px);
+            background-size: 30px 30px;
         }
         .room-4::after {
-            content: ''; position: absolute; bottom: 0; width: 100%; height: 25%;
-            background: linear-gradient(to top, #000, #2d3436);
-            border-top: 2px solid #00b894;
+            content: ''; position: absolute; bottom: 0; width: 100%; height: 30%;
+            background: #000; border-top: 5px solid #00b894;
         }
 
-        .room-label {
-            position: absolute; top: 15%; width: 100%; text-align: center;
-            font-size: 4rem; font-weight: 900; color: rgba(255,255,255,0.15);
-            text-transform: uppercase; letter-spacing: 5px; pointer-events: none;
+        /* Oda Etiketleri */
+        .room-tag {
+            position: absolute; top: 120px; font-size: 3rem; font-weight: 900;
+            color: rgba(0,0,0,0.1); text-transform: uppercase; letter-spacing: 5px;
+            pointer-events: none; width: 100%; text-align: center;
         }
 
-        #night-overlay {
-            position: absolute; width: 100%; height: 100%;
-            background: rgba(10, 10, 40, 0.9);
-            pointer-events: none; opacity: 0; transition: opacity 1s; z-index: 50;
+        #night-mask {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 10, 30, 0.95); pointer-events: none; opacity: 0;
+            transition: opacity 1s; z-index: 50;
         }
 
         /* =========================================
-           3. CHARACTER
+           3. POU CHARACTER
            ========================================= */
-        #pou-container {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -40%);
-            width: 220px; height: 200px;
-            z-index: 20;
-            /* Dokunma olayları için kritik: */
-            touch-action: none; 
+        #pou-wrapper {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -40%);
+            width: 200px; height: 180px; z-index: 20; touch-action: none;
         }
 
-        #pou-body {
+        #pou {
             width: 100%; height: 100%;
-            background: #e67e22; /* Default Color */
-            border-radius: 50% 50% 40% 40%;
+            background: #e67e22;
+            border-radius: 50% 50% 45% 45%;
             position: relative;
-            box-shadow: 
-                inset -15px -15px 30px rgba(0,0,0,0.15), 
-                inset 10px 10px 30px rgba(255,255,255,0.4),
-                0 20px 40px rgba(0,0,0,0.3);
+            box-shadow: inset -10px -10px 20px rgba(0,0,0,0.2), 0 15px 25px rgba(0,0,0,0.3);
             display: flex; justify-content: center;
-            cursor: pointer;
             transition: transform 0.1s;
         }
-        #pou-body:active { transform: scale(0.95); }
+        #pou:active { transform: scale(0.95); }
 
-        .eyes { display: flex; gap: 24px; position: absolute; top: 60px; z-index: 22; }
+        .eyes { display: flex; gap: 20px; position: absolute; top: 50px; z-index: 25; }
         .eye {
-            width: 55px; height: 55px; background: #fff;
-            border-radius: 50%; border: 4px solid #333;
-            position: relative; overflow: hidden;
+            width: 50px; height: 50px; background: white; border-radius: 50%;
+            border: 4px solid #333; position: relative; overflow: hidden;
         }
         .pupil {
-            width: 20px; height: 20px; background: #111;
-            border-radius: 50%; position: absolute;
-            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 18px; height: 18px; background: black; border-radius: 50%;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
         }
         .lid {
-            position: absolute; top: 0; width: 100%; height: 0%;
-            background: inherit; z-index: 2; transition: height 0.1s; border-bottom: 2px solid #333;
+            position: absolute; top: 0; left: 0; width: 100%; height: 0%;
+            background: inherit; z-index: 2; transition: height 0.1s; border-bottom: 3px solid #333;
         }
 
         .mouth {
-            width: 40px; height: 15px;
-            border-bottom: 5px solid #333; border-radius: 50%;
-            position: absolute; top: 130px;
-            transition: 0.2s;
+            width: 30px; height: 10px; border-bottom: 4px solid #333; border-radius: 50%;
+            position: absolute; top: 115px; transition: 0.2s;
         }
-        .mouth.open { height: 35px; background: #5a2a2a; border-radius: 50%; border: 3px solid #333; }
+        .mouth.open { height: 30px; background: #600; border: 3px solid #333; }
         .mouth.sad { transform: rotate(180deg) translateY(-10px); }
 
-        /* Kirler */
-        .dirt {
-            position: absolute; width: 40px; height: 40px;
-            background: #4e342e; border-radius: 50%;
-            opacity: 0.9; filter: blur(3px); z-index: 25;
-            transition: all 0.3s;
-        }
-        .dirt.soaped {
-            background: #fff; opacity: 0.8; 
-            box-shadow: 0 0 10px #fff, inset 0 0 10px #ecf0f1;
-            filter: blur(1px);
-        }
+        /* Aksesuarlar */
+        .acc { position: absolute; left: 50%; transform: translateX(-50%); pointer-events: none; z-index: 30; }
+        #acc-hat { top: -50px; font-size: 80px; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3)); }
+        #acc-glasses { top: 55px; font-size: 70px; }
 
-        /* Kıyafetler */
-        .accessory { position: absolute; pointer-events: none; z-index: 30; }
-        #wear-hat { top: -45px; font-size: 100px; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3)); display: none; }
-        #wear-glasses { top: 65px; font-size: 80px; display: none; }
+        /* Kaka */
+        .poop {
+            position: absolute; font-size: 50px; z-index: 15;
+            animation: bounce 1s infinite; cursor: pointer;
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
+        }
+        @keyframes bounce { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+
+        /* Kir */
+        .dirt {
+            position: absolute; width: 35px; height: 35px; background: #5d4037;
+            border-radius: 50%; filter: blur(3px); z-index: 26;
+        }
+        .dirt.soaped { background: white; opacity: 0.8; }
 
         /* =========================================
-           4. UI LAYOUT (MOBILE OPTIMIZED)
+           4. UI OVERLAY
            ========================================= */
-        #ui-layer {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 100;
-        }
+        #ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
 
         /* Top HUD */
-        .hud-top {
-            position: absolute; top: 10px; left: 0; width: 100%;
-            padding: 10px 20px;
-            display: flex; justify-content: space-between;
-            align-items: flex-start;
-            pointer-events: auto;
+        .top-bar {
+            position: absolute; top: 10px; width: 100%; padding: 0 15px;
+            display: flex; justify-content: space-between; align-items: center; pointer-events: auto;
         }
-
-        .hud-left, .hud-right { display: flex; flex-direction: column; gap: 10px; }
-
         .badge {
-            background: var(--ui-bg); backdrop-filter: blur(5px);
-            padding: 8px 15px; border-radius: 20px;
-            font-weight: 700; color: #444; border: 1px solid var(--ui-border);
-            box-shadow: var(--shadow-soft); display: flex; align-items: center; gap: 5px;
+            background: rgba(255,255,255,0.9); padding: 8px 15px; border-radius: 20px;
+            font-weight: bold; color: #444; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex; align-items: center; gap: 5px; border: 2px solid #fff;
         }
 
-        /* Stat Bars Container - Centered Top */
-        .stats-container {
-            position: absolute; top: 50px; left: 50%; transform: translateX(-50%);
-            background: rgba(255,255,255,0.6); padding: 8px; border-radius: 12px;
-            display: flex; gap: 6px; backdrop-filter: blur(5px);
+        /* Stats */
+        .stats {
+            position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
+            background: rgba(255,255,255,0.7); padding: 8px; border-radius: 15px;
+            display: flex; gap: 8px; backdrop-filter: blur(5px); pointer-events: auto;
         }
-        .stat-bar { 
-            width: 50px; height: 8px; background: rgba(0,0,0,0.1); 
-            border-radius: 4px; overflow: hidden; position: relative; 
-        }
+        .stat-box { width: 45px; height: 8px; background: #ddd; border-radius: 4px; overflow: hidden; position: relative; }
         .stat-fill { height: 100%; width: 100%; transition: width 0.5s; }
-        .stat-icon { position: absolute; top:-20px; left:50%; transform: translateX(-50%); font-size:12px; }
+        .stat-icon { position: absolute; top: -22px; left: 50%; transform: translateX(-50%); font-size: 14px; }
 
-        /* Bottom Dock - Floating & Safe Area */
-        .dock-container {
-            position: absolute; 
-            bottom: calc(20px + var(--safe-bottom)); 
-            width: 100%;
-            display: flex; justify-content: center;
-            pointer-events: auto;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        /* Bottom Dock */
+        .dock {
+            position: absolute; bottom: 30px; width: 100%; pointer-events: auto;
+            display: flex; justify-content: center; transition: transform 0.3s;
         }
-        .dock-container.hidden { transform: translateY(150px); }
-
-        .dock-scroll {
-            display: flex; gap: 15px; 
-            background: var(--ui-bg); padding: 10px 20px;
-            border-radius: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            border: 1px solid var(--ui-border);
-            backdrop-filter: blur(10px);
-            max-width: 90vw; overflow-x: auto; /* Çok eşya varsa kaydır */
+        .dock.hidden { transform: translateY(150px); }
+        
+        .dock-inner {
+            background: rgba(255,255,255,0.9); padding: 10px 20px; border-radius: 30px;
+            display: flex; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow-x: auto; max-width: 95vw;
         }
 
         .btn {
-            width: 60px; height: 60px;
-            background: #fff; border-radius: 18px;
-            border: none; border-bottom: 4px solid #dfe6e9;
-            font-size: 30px; display: flex; justify-content: center; align-items: center;
-            cursor: pointer; transition: transform 0.1s;
-            flex-shrink: 0; /* Küçülmesin */
+            min-width: 60px; height: 60px; background: white; border-radius: 15px;
+            border: none; border-bottom: 4px solid #ccc; font-size: 30px;
+            display: flex; justify-content: center; align-items: center; cursor: pointer;
         }
         .btn:active { transform: translateY(4px); border-bottom: 0; background: #eee; }
-        .btn.active { background: #dff9fb; border-color: #81ecec; }
 
-        /* Draggable Items */
-        .drag-item {
-            position: absolute; width: 60px; height: 60px;
-            font-size: 50px; z-index: 200; pointer-events: none;
-            display: flex; justify-content: center; align-items: center;
-            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.3));
+        /* Draggable Food/Tools */
+        .drag-obj {
+            position: absolute; width: 60px; height: 60px; font-size: 50px;
+            z-index: 200; pointer-events: none; display: flex; justify-content: center; align-items: center;
         }
 
         /* Toast */
-        .toast {
-            position: absolute; top: 120px; left: 50%; transform: translateX(-50%) scale(0.9);
-            background: rgba(33, 33, 33, 0.95); color: white;
-            padding: 10px 20px; border-radius: 30px; font-weight: bold;
-            opacity: 0; pointer-events: none; transition: 0.3s; z-index: 500;
+        #toast {
+            position: absolute; top: 120px; left: 50%; transform: translateX(-50%);
+            background: #333; color: white; padding: 10px 20px; border-radius: 20px;
+            opacity: 0; transition: 0.3s; z-index: 500; font-weight: bold;
         }
-        .toast.show { transform: translateX(-50%) scale(1); opacity: 1; }
 
-        /* Modals */
+        /* =========================================
+           5. MODALS & GAMES
+           ========================================= */
         .modal {
             position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.6); z-index: 1000;
+            background: rgba(0,0,0,0.8); z-index: 1000;
             display: none; justify-content: center; align-items: center;
             backdrop-filter: blur(5px);
         }
-        .modal.active { display: flex; }
+        .modal.open { display: flex; }
         
-        .modal-card {
-            width: 90%; max-width: 400px; max-height: 80%;
-            background: #fff; border-radius: 25px;
-            display: flex; flex-direction: column;
-            overflow: hidden; animation: popIn 0.3s;
+        .card {
+            width: 90%; max-width: 400px; height: 80%; background: #fff;
+            border-radius: 20px; display: flex; flex-direction: column; overflow: hidden;
+            animation: pop 0.3s;
         }
-        @keyframes popIn { from{transform:scale(0.8); opacity:0;} to{transform:scale(1); opacity:1;} }
+        @keyframes pop { from{transform:scale(0.8);} to{transform:scale(1);} }
 
-        .modal-header { padding: 15px; background: #eee; display:flex; justify-content:space-between; align-items:center; font-weight:bold; }
-        .modal-body { flex: 1; overflow-y: auto; padding: 15px; background: #f9f9f9; }
-        .close-btn { background: #ff7675; color: white; border:none; width:30px; height:30px; border-radius:50%; }
-
-        /* Shop Grid */
+        .card-header { padding: 15px; background: #eee; display:flex; justify-content:space-between; font-weight:bold; font-size:1.2rem; }
+        .card-body { flex: 1; overflow-y: auto; padding: 10px; background: #f5f5f5; }
+        
         .shop-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .shop-item {
-            background: white; padding: 10px; border-radius: 12px;
-            text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            cursor: pointer; border: 2px solid transparent;
-        }
-        .shop-item:active { border-color: var(--primary); transform: scale(0.98); }
-        .price { font-size: 12px; background: #fdcb6e; padding: 2px 6px; border-radius: 8px; margin-top: 5px; display: inline-block; }
+        .item { background: white; padding: 10px; border-radius: 10px; text-align: center; cursor: pointer; border: 2px solid transparent; }
+        .item.owned { border-color: #2ecc71; }
+        .item:active { background: #eee; }
 
-        /* Canvas Game */
-        canvas { width: 100%; height: 100%; }
-
+        .game-canvas { width: 100%; height: 100%; background: transparent; }
+        .game-ui { position: absolute; top: 20px; left: 20px; color: white; font-size: 24px; font-weight: bold; text-shadow: 0 2px 5px black; pointer-events: none;}
+        
     </style>
 </head>
 <body>
 
-    <div id="viewport">
-        <div id="night-overlay"></div>
+    <div id="night-mask"></div>
 
-        <div id="world-track">
-            <div class="room room-0">
-                <div class="room-label">Yatak Odası</div>
+    <div id="world-track">
+        <div class="room room-0"><div class="room-tag">Yatak Odası</div></div>
+        <div class="room room-1"><div class="room-tag">Salon</div></div>
+        <div class="room room-2"><div class="room-tag">Mutfak</div></div>
+        <div class="room room-3"><div class="room-tag">Banyo</div></div>
+        <div class="room room-4"><div class="room-tag">Oyun Odası</div></div>
+    </div>
+
+    <div id="pou-wrapper">
+        <div class="acc" id="acc-hat"></div>
+        <div class="acc" id="acc-glasses"></div>
+        <div id="pou" onclick="Main.poke()">
+            <div class="eyes">
+                <div class="eye"><div class="lid" id="lid-l"></div><div class="pupil" id="p-l"></div></div>
+                <div class="eye"><div class="lid" id="lid-r"></div><div class="pupil" id="p-r"></div></div>
             </div>
-            <div class="room room-1">
-                <div class="room-label">Salon</div>
-            </div>
-            <div class="room room-2">
-                <div class="room-label">Mutfak</div>
-            </div>
-            <div class="room room-3">
-                <div class="room-label">Banyo</div>
-            </div>
-            <div class="room room-4">
-                <div class="room-label">Oyun</div>
-            </div>
+            <div class="mouth" id="mouth"></div>
+        </div>
+    </div>
+
+    <div id="ui">
+        <div class="top-bar">
+            <div class="badge">🪙 <span id="coin-disp">0</span></div>
+            <div class="badge" onclick="Main.save()">💾 Kaydet</div>
         </div>
 
-        <div id="pou-container">
-            <div id="wear-hat" class="accessory">🎩</div>
-            <div id="wear-glasses" class="accessory">🕶️</div>
-
-            <div id="pou-body" onclick="Game.poke()">
-                <div class="eyes">
-                    <div class="eye"><div class="lid" id="lid-l"></div><div class="pupil" id="pupil-l"></div></div>
-                    <div class="eye"><div class="lid" id="lid-r"></div><div class="pupil" id="pupil-r"></div></div>
-                </div>
-                <div class="mouth" id="mouth"></div>
-            </div>
+        <div class="stats">
+            <div class="stat-box"><div class="stat-icon">🍖</div><div class="stat-fill" id="bar-hunger" style="background:#ff7675"></div></div>
+            <div class="stat-box"><div class="stat-icon">🧼</div><div class="stat-fill" id="bar-clean" style="background:#74b9ff"></div></div>
+            <div class="stat-box"><div class="stat-icon">⚡</div><div class="stat-fill" id="bar-energy" style="background:#ffeaa7"></div></div>
+            <div class="stat-box"><div class="stat-icon">😊</div><div class="stat-fill" id="bar-fun" style="background:#a29bfe"></div></div>
         </div>
 
-        <div id="ui-layer">
-            <div class="hud-top">
-                <div class="badge">💰 <span id="ui-coin">0</span></div>
-                <div class="badge" onclick="Game.save()">💾</div>
+        <div id="toast">Mesaj</div>
+
+        <div class="dock hidden" id="dock-0">
+            <div class="dock-inner">
+                <button class="btn" onclick="Main.toggleSleep()">💡</button>
+                <button class="btn" onclick="Shop.open('clothes')">👕</button>
+                <button class="btn" onclick="Shop.open('wallpaper')">🖼️</button>
             </div>
-
-            <div class="stats-container">
-                <div class="stat-bar"><div class="stat-icon">🍖</div><div class="stat-fill" id="bar-hunger" style="background:#ff7675;"></div></div>
-                <div class="stat-bar"><div class="stat-icon">🧼</div><div class="stat-fill" id="bar-clean" style="background:#74b9ff;"></div></div>
-                <div class="stat-bar"><div class="stat-icon">⚡</div><div class="stat-fill" id="bar-energy" style="background:#ffeaa7;"></div></div>
-                <div class="stat-bar"><div class="stat-icon">😊</div><div class="stat-fill" id="bar-fun" style="background:#a29bfe;"></div></div>
+        </div>
+        <div class="dock" id="dock-1">
+            <div class="dock-inner"><small>Oda değiştirmek için kaydır</small></div>
+        </div>
+        <div class="dock hidden" id="dock-2">
+            <div class="dock-inner" id="food-list">
+                <button class="btn" onclick="Shop.open('food')">➕</button>
             </div>
-
-            <div class="toast" id="toast">Mesaj</div>
-
-            <div class="dock-container hidden" id="dock-0">
-                <div class="dock-scroll">
-                    <button class="btn" onclick="Game.toggleSleep()">💡</button>
-                    <button class="btn" onclick="Shop.open('clothes')">👕</button>
-                </div>
+        </div>
+        <div class="dock hidden" id="dock-3">
+            <div class="dock-inner">
+                <button class="btn" id="tool-sponge" onmousedown="Interact.start(event,'sponge')" ontouchstart="Interact.start(event,'sponge')">🧽</button>
+                <button class="btn" id="tool-shower" onmousedown="Interact.start(event,'shower')" ontouchstart="Interact.start(event,'shower')">🚿</button>
+                <button class="btn" onclick="Shop.open('potions')">🧪</button>
             </div>
-
-            <div class="dock-container" id="dock-1">
-                <div class="dock-scroll">
-                    <div style="font-size:12px; color:#666; width:100px; text-align:center;">Kaydırmak için ekranı sürükle</div>
-                </div>
+        </div>
+        <div class="dock hidden" id="dock-4">
+            <div class="dock-inner">
+                <button class="btn" onclick="Games.start('skyjump')">🚀 Sky Jump</button>
+                <button class="btn" onclick="Games.start('fooddrop')">🍎 Food Drop</button>
+                <button class="btn" onclick="Games.start('driver')">🏎️ Driver</button>
             </div>
-
-            <div class="dock-container hidden" id="dock-2">
-                <div class="dock-scroll" id="inventory-food">
-                    <button class="btn" onclick="Shop.open('food')" style="border-color:#fab1a0; background:#fff5f5;">🛒</button>
-                </div>
-            </div>
-
-            <div class="dock-container hidden" id="dock-3">
-                <div class="dock-scroll">
-                    <button class="btn" id="tool-sponge" ontouchstart="Interaction.startTool(event, 'sponge')" onmousedown="Interaction.startTool(event, 'sponge')">🧽</button>
-                    <button class="btn" id="tool-shower" ontouchstart="Interaction.startTool(event, 'shower')" onmousedown="Interaction.startTool(event, 'shower')">🚿</button>
-                </div>
-            </div>
-
-            <div class="dock-container hidden" id="dock-4">
-                <div class="dock-scroll">
-                    <button class="btn" onclick="MiniGames.start()">🎮</button>
-                </div>
-            </div>
-
         </div>
     </div>
 
     <div class="modal" id="modal-shop">
-        <div class="modal-card">
-            <div class="modal-header">
-                <span>Market</span>
-                <button class="close-btn" onclick="Shop.close()">✕</button>
+        <div class="card">
+            <div class="card-header"><span>Market</span><button onclick="Shop.close()">✕</button></div>
+            <div style="padding:10px; display:flex; gap:5px; overflow-x:auto;">
+                <button onclick="Shop.render('food')">🍔 Yemek</button>
+                <button onclick="Shop.render('clothes')">🧢 Giyim</button>
+                <button onclick="Shop.render('potions')">🧪 İksir</button>
             </div>
-            <div style="padding:10px; display:flex; gap:10px; background:#fff;">
-                <button onclick="Shop.render('food')" style="flex:1; padding:5px;">🍔 Yiyecek</button>
-                <button onclick="Shop.render('clothes')" style="flex:1; padding:5px;">🎩 Kıyafet</button>
-                <button onclick="Shop.render('potion')" style="flex:1; padding:5px;">🧪 İksir</button>
-            </div>
-            <div class="modal-body">
-                <div class="shop-grid" id="shop-content"></div>
+            <div class="card-body">
+                <div class="shop-grid" id="shop-grid"></div>
             </div>
         </div>
     </div>
 
     <div class="modal" id="modal-game" style="background:#222;">
-        <div style="width:100%; height:100%; position:relative;">
-            <canvas id="game-canvas"></canvas>
-            <button class="close-btn" style="position:absolute; top:20px; right:20px; width:40px; height:40px;" onclick="MiniGames.stop()">✕</button>
-            <div id="game-score" style="position:absolute; top:20px; left:20px; color:white; font-size:24px; font-weight:bold;">0</div>
+        <div style="position:relative; width:100%; height:100%;">
+            <canvas class="game-canvas" id="game-cvs"></canvas>
+            <div class="game-ui" id="game-score">0</div>
+            <button style="position:absolute; top:20px; right:20px; font-size:30px; background:none; border:none; color:white;" onclick="Games.stop()">✕</button>
+            <div id="game-controls" style="position:absolute; bottom:20px; width:100%; text-align:center; color:white; pointer-events:none;">Ekrana dokunarak oyna</div>
         </div>
     </div>
 
     <script>
-        /* =========================================
-           LOGIC: CONFIG & STATE
-           ========================================= */
-        const State = {
-            coins: 200,
-            stats: { hunger: 80, clean: 60, energy: 90, fun: 80 },
-            inventory: ['🍎', '🍕'],
-            unlocked: [],
-            equipped: { hat: null, glasses: null, color: '#e67e22' },
-            currentRoom: 1, // 1: Hall
-            isSleeping: false
-        };
-
-        const Config = {
-            rooms: 5,
+        /* --- VERİLER VE AYARLAR --- */
+        const DB = {
             items: {
                 food: [
-                    {id:'burger', icon:'🍔', price:15, fill:20},
-                    {id:'donut', icon:'🍩', price:8, fill:10},
-                    {id:'sushi', icon:'🍣', price:25, fill:30},
-                    {id:'broccoli', icon:'🥦', price:5, fill:5},
-                    {id:'chicken', icon:'🍗', price:12, fill:15}
+                    {id:'burger', name:'Burger', icon:'🍔', price:10, fill:25},
+                    {id:'pizza', name:'Pizza', icon:'🍕', price:15, fill:30},
+                    {id:'sushi', name:'Sushi', icon:'🍣', price:20, fill:20},
+                    {id:'broccoli', name:'Brokoli', icon:'🥦', price:5, fill:10},
+                    {id:'donut', name:'Donut', icon:'🍩', price:8, fill:15},
+                    {id:'fries', name:'Patates', icon:'🍟', price:6, fill:12}
                 ],
                 clothes: [
-                    {id:'hat_top', icon:'🎩', price:100, type:'hat'},
-                    {id:'hat_cap', icon:'🧢', price:50, type:'hat'},
-                    {id:'glasses_sun', icon:'🕶️', price:80, type:'glasses'}
+                    {id:'hat_top', name:'Silindir', icon:'🎩', price:100, type:'hat'},
+                    {id:'hat_cap', name:'Şapka', icon:'🧢', price:50, type:'hat'},
+                    {id:'hat_cowboy', name:'Kovboy', icon:'🤠', price:150, type:'hat'},
+                    {id:'gls_sun', name:'Gözlük', icon:'🕶️', price:80, type:'glasses'},
+                    {id:'gls_nerd', name:'Nerd', icon:'🤓', price:60, type:'glasses'}
                 ],
-                potion: [
-                    {id:'pot_health', icon:'🧪', price:50, type:'heal', name:'Tam Şifa'},
-                    {id:'col_blue', icon:'🔵', price:200, type:'color', val:'#74b9ff', name:'Mavi'},
-                    {id:'col_pink', icon:'🟣', price:200, type:'color', val:'#a29bfe', name:'Mor'}
+                potions: [
+                    {id:'pot_heal', name:'Tam Şifa', icon:'❤️', price:50, type:'heal'},
+                    {id:'pot_fat', name:'Zayıflatıcı', icon:'🧪', price:30, type:'diet'},
+                    {id:'col_blue', name:'Mavi', icon:'🔵', price:200, type:'color', val:'#0984e3'},
+                    {id:'col_pink', name:'Pembe', icon:'🟣', price:200, type:'color', val:'#e056fd'},
+                    {id:'col_green', name:'Yeşil', icon:'🟢', price:200, type:'color', val:'#badc58'}
                 ]
             }
         };
 
-        /* =========================================
-           LOGIC: GAME ENGINE
-           ========================================= */
-        const Game = {
+        const State = {
+            coins: 300,
+            stats: { hunger: 80, clean: 60, energy: 90, fun: 80 },
+            inventory: ['🍔', '🥦'],
+            unlocked: [],
+            equipped: { hat: null, glasses: null, color: '#e67e22' },
+            room: 1,
+            sleep: false,
+            poopCount: 0
+        };
+
+        /* --- ANA MOTOR --- */
+        const Main = {
             init: () => {
-                Game.load();
-                UI.renderStats();
-                UI.renderInventory();
-                Character.updateLook();
-                UI.switchRoom(1);
-                
-                // Loops
-                setInterval(Game.tick, 2000); // Stat decay
-                setInterval(Character.blink, 4000); // Göz kırpma
-                setInterval(Game.spawnDirt, 10000); // Kirlenme
-
-                // Swipe Listener
-                Interaction.initSwipe();
-                Interaction.initEyes();
+                Main.load();
+                UI.update();
+                UI.renderFood();
+                Main.loop();
+                Interact.init();
             },
+            loop: () => {
+                // Zamanlayıcılar
+                setInterval(() => {
+                    if(State.sleep) {
+                        State.stats.energy = Math.min(100, State.stats.energy + 5);
+                        State.stats.hunger = Math.max(0, State.stats.hunger - 0.5);
+                    } else {
+                        State.stats.hunger = Math.max(0, State.stats.hunger - 1);
+                        State.stats.clean = Math.max(0, State.stats.clean - 0.5);
+                        State.stats.energy = Math.max(0, State.stats.energy - 0.5);
+                        State.stats.fun = Math.max(0, State.stats.fun - 0.5);
+                    }
+                    UI.update();
+                }, 2000);
 
-            tick: () => {
-                if(State.isSleeping) {
-                    State.stats.energy = Math.min(100, State.stats.energy + 5);
-                    State.stats.hunger = Math.max(0, State.stats.hunger - 0.5);
-                } else {
-                    State.stats.hunger = Math.max(0, State.stats.hunger - 1);
-                    State.stats.clean = Math.max(0, State.stats.clean - 0.5);
-                    State.stats.energy = Math.max(0, State.stats.energy - 0.5);
-                    State.stats.fun = Math.max(0, State.stats.fun - 0.5);
-                }
-                UI.renderStats();
+                // Göz Kırpma
+                setInterval(() => {
+                    if(!State.sleep) {
+                        document.querySelectorAll('.lid').forEach(l => l.style.height = '100%');
+                        setTimeout(() => document.querySelectorAll('.lid').forEach(l => l.style.height = '0%'), 150);
+                    }
+                }, 3500);
+
+                // Kaka Oluşumu
+                setInterval(() => {
+                    if(!State.sleep && Math.random() > 0.7) Main.spawnPoop();
+                }, 10000);
             },
-
-            poke: () => {
-                if(State.isSleeping) return;
-                Character.jump();
-                State.stats.fun = Math.min(100, State.stats.fun + 5);
-                UI.renderStats();
+            spawnPoop: () => {
+                const p = document.createElement('div');
+                p.className = 'poop';
+                p.innerText = '💩';
+                p.style.left = (Math.random() * 80 + 10) + 'vw';
+                p.style.top = (Math.random() * 20 + 60) + 'vh'; // Yerde
+                p.onclick = function() {
+                    this.remove();
+                    State.coins += 5;
+                    UI.toast("+5 Altın");
+                    UI.update();
+                };
+                // Kakayı o anki odaya ekle
+                document.querySelector(`.room-${State.room}`).appendChild(p);
             },
-
-            toggleSleep: () => {
-                State.isSleeping = !State.isSleeping;
-                const overlay = document.getElementById('night-overlay');
-                if(State.isSleeping) {
-                    overlay.style.opacity = 1;
-                    document.querySelectorAll('.lid').forEach(l => l.style.height = '100%');
-                    UI.toast("İyi geceler...");
-                } else {
-                    overlay.style.opacity = 0;
-                    document.querySelectorAll('.lid').forEach(l => l.style.height = '0%');
-                }
-            },
-
             spawnDirt: () => {
-                if(!State.isSleeping && Math.random() > 0.6) {
-                    const dirt = document.createElement('div');
-                    dirt.className = 'dirt';
-                    // Pou'nun içinde rastgele konum
-                    dirt.style.left = (20 + Math.random() * 60) + '%';
-                    dirt.style.top = (20 + Math.random() * 60) + '%';
-                    document.getElementById('pou-body').appendChild(dirt);
-                    State.stats.clean -= 5;
-                    UI.renderStats();
-                }
+                const d = document.createElement('div');
+                d.className = 'dirt';
+                d.style.left = (20 + Math.random()*60) + '%';
+                d.style.top = (20 + Math.random()*60) + '%';
+                document.getElementById('pou').appendChild(d);
+                State.stats.clean -= 5;
             },
-
-            save: () => {
-                localStorage.setItem('pou_ultimate_v2', JSON.stringify(State));
-                UI.toast("Kayıt Edildi!");
+            poke: () => {
+                if(State.sleep) return;
+                const p = document.getElementById('pou');
+                p.style.transform = "scale(1.1, 0.9)";
+                setTimeout(() => p.style.transform = "scale(1)", 150);
+                State.stats.fun = Math.min(100, State.stats.fun + 5);
+                UI.update();
             },
+            toggleSleep: () => {
+                State.sleep = !State.sleep;
+                document.getElementById('night-mask').style.opacity = State.sleep ? 1 : 0;
+                document.querySelectorAll('.lid').forEach(l => l.style.height = State.sleep ? '100%' : '0%');
+            },
+            save: () => { localStorage.setItem('pou_v3', JSON.stringify(State)); UI.toast("Kaydedildi"); },
             load: () => {
-                const data = localStorage.getItem('pou_ultimate_v2');
-                if(data) {
-                    const saved = JSON.parse(data);
-                    Object.assign(State, saved);
-                }
+                const d = localStorage.getItem('pou_v3');
+                if(d) Object.assign(State, JSON.parse(d));
+                UI.applyLook();
+                UI.switchRoom(1);
             }
         };
 
-        /* =========================================
-           LOGIC: UI & ROOMS
-           ========================================= */
+        /* --- ARAYÜZ --- */
         const UI = {
-            renderStats: () => {
+            update: () => {
                 document.getElementById('bar-hunger').style.width = State.stats.hunger + '%';
                 document.getElementById('bar-clean').style.width = State.stats.clean + '%';
                 document.getElementById('bar-energy').style.width = State.stats.energy + '%';
                 document.getElementById('bar-fun').style.width = State.stats.fun + '%';
-                document.getElementById('ui-coin').innerText = State.coins;
-
-                // Ağız durumu
+                document.getElementById('coin-disp').innerText = State.coins;
+                
                 const mouth = document.getElementById('mouth');
-                if(State.stats.hunger < 20 || State.stats.clean < 20) mouth.classList.add('sad');
+                if(State.stats.hunger < 30 || State.stats.clean < 30) mouth.classList.add('sad');
                 else mouth.classList.remove('sad');
             },
-
-            renderInventory: () => {
-                const container = document.getElementById('inventory-food');
-                // Temizle ama market butonunu koru
-                const shopBtn = container.querySelector('button');
-                container.innerHTML = '';
-                
-                State.inventory.forEach((item, index) => {
+            renderFood: () => {
+                const div = document.getElementById('food-list');
+                const addBtn = div.firstElementChild; 
+                div.innerHTML = '';
+                State.inventory.forEach((icon, i) => {
                     const btn = document.createElement('div');
                     btn.className = 'btn';
-                    btn.innerText = item;
-                    // Dokunmatik sürükleme
-                    btn.addEventListener('touchstart', (e) => Interaction.startDrag(e, item, index));
-                    btn.addEventListener('mousedown', (e) => Interaction.startDrag(e, item, index));
-                    container.appendChild(btn);
+                    btn.innerText = icon;
+                    btn.ontouchstart = (e) => Interact.start(e, icon, i);
+                    btn.onmousedown = (e) => Interact.start(e, icon, i);
+                    div.appendChild(btn);
                 });
-                container.appendChild(shopBtn);
+                div.appendChild(addBtn);
             },
-
-            switchRoom: (idx) => {
-                if(idx < 0 || idx > 4) return;
-                State.currentRoom = idx;
-                document.getElementById('world-track').style.transform = `translateX(-${idx * 100}vw)`;
-                
-                // Dockları yönet
-                document.querySelectorAll('.dock-container').forEach(d => d.classList.add('hidden'));
-                const target = document.getElementById(`dock-${idx}`);
-                if(target) setTimeout(() => target.classList.remove('hidden'), 200);
+            applyLook: () => {
+                document.getElementById('pou').style.background = State.equipped.color;
+                document.getElementById('acc-hat').innerText = State.equipped.hat ? DB.items.clothes.find(x=>x.id==State.equipped.hat).icon : '';
+                document.getElementById('acc-glasses').innerText = State.equipped.glasses ? DB.items.clothes.find(x=>x.id==State.equipped.glasses).icon : '';
             },
-
+            switchRoom: (i) => {
+                if(i<0 || i>4) return;
+                State.room = i;
+                document.getElementById('world-track').style.transform = `translateX(-${i*100}vw)`;
+                document.querySelectorAll('.dock').forEach(d => d.classList.add('hidden'));
+                const d = document.getElementById('dock-'+i);
+                if(d) setTimeout(()=>d.classList.remove('hidden'), 300);
+            },
             toast: (msg) => {
                 const t = document.getElementById('toast');
-                t.innerText = msg;
-                t.classList.add('show');
-                setTimeout(()=>t.classList.remove('show'), 2000);
+                t.innerText = msg; t.style.opacity = 1;
+                setTimeout(()=>t.style.opacity=0, 2000);
             }
         };
 
-        /* =========================================
-           LOGIC: INTERACTION (SWIPE, DRAG, TOOLS)
-           ========================================= */
-        const Interaction = {
-            isDragging: false,
-            
-            initSwipe: () => {
-                let startX = 0;
-                const track = document.getElementById('world-track');
-                
-                document.addEventListener('touchstart', e => startX = e.touches[0].clientX, {passive:false});
+        /* --- ETKİLEŞİM (SÜRÜKLEME) --- */
+        const Interact = {
+            drag: null,
+            init: () => {
+                // Oda Kaydırma
+                let sx = 0;
+                document.addEventListener('touchstart', e => sx = e.touches[0].clientX, {passive:false});
                 document.addEventListener('touchend', e => {
-                    if(Interaction.isDragging) return; 
-                    const diff = startX - e.changedTouches[0].clientX;
-                    if(Math.abs(diff) > 50) {
-                        if(diff > 0) UI.switchRoom(State.currentRoom + 1);
-                        else UI.switchRoom(State.currentRoom - 1);
-                    }
+                    if(Interact.drag || Games.active) return;
+                    const diff = sx - e.changedTouches[0].clientX;
+                    if(Math.abs(diff) > 50) UI.switchRoom(State.room + (diff>0?1:-1));
                 }, {passive:false});
-            },
 
-            initEyes: () => {
-                const move = (x, y) => {
-                    if(State.isSleeping) return;
-                    ['pupil-l', 'pupil-r'].forEach(id => {
+                // Göz Takibi
+                const track = (x, y) => {
+                    if(State.sleep) return;
+                    ['p-l','p-r'].forEach(id => {
                         const el = document.getElementById(id);
-                        const rect = el.parentElement.getBoundingClientRect();
-                        const cx = rect.left + rect.width/2;
-                        const cy = rect.top + rect.height/2;
-                        const angle = Math.atan2(y - cy, x - cx);
-                        const dist = Math.min(5, Math.hypot(x-cx, y-cy)/10);
-                        el.style.transform = `translate(-50%, -50%) translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px)`;
+                        const r = el.parentElement.getBoundingClientRect();
+                        const cx = r.left+r.width/2, cy = r.top+r.height/2;
+                        const ang = Math.atan2(y-cy, x-cx);
+                        const dis = Math.min(6, Math.hypot(x-cx, y-cy)/8);
+                        el.style.transform = `translate(-50%,-50%) translate(${Math.cos(ang)*dis}px, ${Math.sin(ang)*dis}px)`;
                     });
                 };
-                window.addEventListener('mousemove', e => move(e.clientX, e.clientY));
-                window.addEventListener('touchmove', e => move(e.touches[0].clientX, e.touches[0].clientY));
+                window.onmousemove = e => track(e.clientX, e.clientY);
+                window.ontouchmove = e => track(e.touches[0].clientX, e.touches[0].clientY);
             },
-
-            // Yemek Sürükleme
-            startDrag: (e, itemIcon, index) => {
+            start: (e, type, idx) => {
                 e.preventDefault();
-                Interaction.isDragging = true;
+                const d = document.createElement('div');
+                d.className = 'drag-obj';
+                d.innerText = (type=='sponge'?'🧽':type=='shower'?'🚿':type);
+                document.body.appendChild(d);
                 
-                const el = document.createElement('div');
-                el.className = 'drag-item';
-                el.innerText = itemIcon;
-                document.body.appendChild(el);
-
-                const move = (x, y) => {
-                    el.style.left = (x - 30) + 'px';
-                    el.style.top = (y - 30) + 'px';
+                const move = (cx, cy) => {
+                    d.style.left = (cx-30)+'px'; d.style.top = (cy-30)+'px';
+                    
+                    // Leke Temizleme
+                    if(type=='sponge' || type=='shower') {
+                        const pou = document.getElementById('pou').getBoundingClientRect();
+                        if(cx > pou.left && cx < pou.right && cy > pou.top && cy < pou.bottom) {
+                            document.querySelectorAll('.dirt').forEach(dirt => {
+                                const r = dirt.getBoundingClientRect();
+                                if(Math.hypot(cx-(r.left+17), cy-(r.top+17)) < 40) {
+                                    if(type=='sponge') dirt.classList.add('soaped');
+                                    else if(type=='shower' && dirt.classList.contains('soaped')) {
+                                        dirt.remove();
+                                        State.stats.clean = Math.min(100, State.stats.clean+10);
+                                        State.coins++; UI.update();
+                                    }
+                                }
+                            });
+                        }
+                    }
                 };
                 
-                const touch = e.touches ? e.touches[0] : e;
-                move(touch.clientX, touch.clientY);
+                const up = (ev) => {
+                    d.remove();
+                    window.removeEventListener('touchmove', tm);
+                    window.removeEventListener('touchend', up);
+                    window.removeEventListener('mousemove', mm);
+                    window.removeEventListener('mouseup', up);
 
-                const onMove = (ev) => {
-                    const t = ev.touches ? ev.touches[0] : ev;
-                    move(t.clientX, t.clientY);
-                }
-
-                const onEnd = (ev) => {
-                    // Ağız çarpışma kontrolü
-                    const mouth = document.getElementById('mouth').getBoundingClientRect();
-                    const item = el.getBoundingClientRect();
-                    
-                    if(item.left < mouth.right && item.right > mouth.left && 
-                       item.top < mouth.bottom && item.bottom > mouth.top) {
-                        Character.eat();
-                        // Envanterden sil
-                        State.inventory.splice(index, 1);
-                        UI.renderInventory();
-                    }
-
-                    el.remove();
-                    Interaction.isDragging = false;
-                    window.removeEventListener('mousemove', onMove);
-                    window.removeEventListener('touchmove', onMove);
-                    window.removeEventListener('mouseup', onEnd);
-                    window.removeEventListener('touchend', onEnd);
-                }
-
-                window.addEventListener('mousemove', onMove);
-                window.addEventListener('touchmove', onMove, {passive:false});
-                window.addEventListener('mouseup', onEnd);
-                window.addEventListener('touchend', onEnd);
-            },
-
-            // Banyo Araçları (Sünger / Duş)
-            startTool: (e, type) => {
-                e.preventDefault();
-                Interaction.isDragging = true;
-                const el = document.createElement('div');
-                el.className = 'drag-item';
-                el.innerText = type === 'sponge' ? '🧽' : '🚿';
-                document.body.appendChild(el);
-
-                const onMove = (ev) => {
-                    const t = ev.touches ? ev.touches[0] : ev;
-                    el.style.left = (t.clientX - 30) + 'px';
-                    el.style.top = (t.clientY - 30) + 'px';
-
-                    // Çarpışma ve Temizlik Mantığı
-                    const pouRect = document.getElementById('pou-body').getBoundingClientRect();
-                    // Sadece Pou üzerindeyken çalışsın
-                    if(t.clientX > pouRect.left && t.clientX < pouRect.right && 
-                       t.clientY > pouRect.top && t.clientY < pouRect.bottom) {
+                    // Yemek Yeme
+                    const m = document.getElementById('mouth').getBoundingClientRect();
+                    const r = d.getBoundingClientRect();
+                    if(type!='sponge' && type!='shower' && 
+                       r.left < m.right && r.right > m.left && r.top < m.bottom && r.bottom > m.top) {
+                        // Animasyon
+                        const p = document.getElementById('pou');
+                        p.style.transform = "scale(1.1,0.9)"; setTimeout(()=>p.style.transform="scale(1)", 200);
+                        document.getElementById('mouth').classList.add('open');
+                        setTimeout(()=>document.getElementById('mouth').classList.remove('open'), 500);
                         
-                        document.querySelectorAll('.dirt').forEach(dirt => {
-                            const r = dirt.getBoundingClientRect();
-                            const dist = Math.hypot(t.clientX - (r.left + r.width/2), t.clientY - (r.top + r.height/2));
-                            
-                            if(dist < 50) {
-                                if(type === 'sponge') {
-                                    dirt.classList.add('soaped'); // Köpürt
-                                } else if(type === 'shower' && dirt.classList.contains('soaped')) {
-                                    dirt.remove(); // Temizle
-                                    State.stats.clean = Math.min(100, State.stats.clean + 10);
-                                    State.coins += 2;
-                                    UI.renderStats();
-                                }
-                            }
-                        });
+                        // Mantık
+                        State.stats.hunger = Math.min(100, State.stats.hunger+20);
+                        State.inventory.splice(idx, 1);
+                        UI.renderFood(); UI.update();
+                        
+                        // Kaka İhtimali
+                        if(Math.random() > 0.5) Main.spawnPoop();
+                        if(Math.random() > 0.7) Main.spawnDirt();
                     }
-                }
+                };
 
-                const onEnd = () => {
-                    el.remove();
-                    Interaction.isDragging = false;
-                    window.removeEventListener('mousemove', onMove);
-                    window.removeEventListener('touchmove', onMove);
-                    window.removeEventListener('mouseup', onEnd);
-                    window.removeEventListener('touchend', onEnd);
-                }
+                const tm = ev => move(ev.touches[0].clientX, ev.touches[0].clientY);
+                const mm = ev => move(ev.clientX, ev.clientY);
 
-                window.addEventListener('mousemove', onMove);
-                window.addEventListener('touchmove', onMove, {passive:false});
-                window.addEventListener('mouseup', onEnd);
-                window.addEventListener('touchend', onEnd);
-            }
-        };
-
-        /* =========================================
-           LOGIC: CHARACTER ACTIONS
-           ========================================= */
-        const Character = {
-            blink: () => {
-                if(State.isSleeping) return;
-                document.querySelectorAll('.lid').forEach(l => l.style.height = '100%');
-                setTimeout(() => {
-                    if(!State.isSleeping) document.querySelectorAll('.lid').forEach(l => l.style.height = '0%');
-                }, 150);
-            },
-            jump: () => {
-                const p = document.getElementById('pou-body');
-                p.style.transform = "translateY(-30px) scale(0.95, 1.05)";
-                setTimeout(() => p.style.transform = "translateY(0) scale(1)", 200);
-            },
-            eat: () => {
-                const m = document.getElementById('mouth');
-                m.classList.add('open');
-                Character.jump();
-                setTimeout(() => m.classList.remove('open'), 500);
-                State.stats.hunger = Math.min(100, State.stats.hunger + 15);
-                UI.renderStats();
-            },
-            updateLook: () => {
-                // Renk
-                document.getElementById('pou-body').style.background = State.equipped.color;
-                // Şapka
-                const hat = document.getElementById('wear-hat');
-                if(State.equipped.hat) {
-                    const item = Config.items.clothes.find(i => i.id === State.equipped.hat);
-                    hat.innerText = item.icon;
-                    hat.style.display = 'block';
-                } else hat.style.display = 'none';
-                // Gözlük
-                const gls = document.getElementById('wear-glasses');
-                if(State.equipped.glasses) {
-                    const item = Config.items.clothes.find(i => i.id === State.equipped.glasses);
-                    gls.innerText = item.icon;
-                    gls.style.display = 'block';
-                } else gls.style.display = 'none';
-            }
-        };
-
-        /* =========================================
-           LOGIC: SHOP
-           ========================================= */
-        const Shop = {
-            open: (tab) => {
-                document.getElementById('modal-shop').classList.add('active');
-                Shop.render(tab);
-            },
-            close: () => {
-                document.getElementById('modal-shop').classList.remove('active');
-            },
-            render: (category) => {
-                const container = document.getElementById('shop-content');
-                container.innerHTML = '';
+                window.addEventListener('touchmove', tm, {passive:false});
+                window.addEventListener('touchend', up);
+                window.addEventListener('mousemove', mm);
+                window.addEventListener('mouseup', up);
                 
-                Config.items[category].forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'shop-item';
-                    
-                    const isOwned = State.unlocked.includes(item.id);
-                    const label = (category === 'clothes' && isOwned) ? 'Sahipsin' : `${item.price}💰`;
+                const t = e.touches ? e.touches[0] : e;
+                move(t.clientX, t.clientY);
+            }
+        };
 
-                    div.innerHTML = `
-                        <div style="font-size:30px;">${item.icon}</div>
-                        <div style="font-weight:bold; font-size:14px;">${item.name || ''}</div>
-                        <div class="price">${label}</div>
-                    `;
-                    div.onclick = () => Shop.buy(item, category);
-                    container.appendChild(div);
+        /* --- MARKET --- */
+        const Shop = {
+            open: (cat) => {
+                document.getElementById('modal-shop').classList.add('open');
+                Shop.render(cat);
+            },
+            close: () => document.getElementById('modal-shop').classList.remove('open'),
+            render: (cat) => {
+                const g = document.getElementById('shop-grid'); g.innerHTML = '';
+                DB.items[cat].forEach(i => {
+                    const el = document.createElement('div');
+                    el.className = 'item';
+                    if(State.unlocked.includes(i.id)) el.classList.add('owned');
+                    el.innerHTML = `<div style="font-size:30px">${i.icon}</div><div>${i.name}</div><div style="color:#e67e22;font-weight:bold">${State.unlocked.includes(i.id) ? 'Sahipsin' : i.price}</div>`;
+                    el.onclick = () => Shop.buy(i, cat);
+                    g.appendChild(el);
                 });
             },
             buy: (item, cat) => {
-                if(cat === 'clothes' && State.unlocked.includes(item.id)) {
-                    // Giy / Çıkar
-                    State.equipped[item.type] = (State.equipped[item.type] === item.id) ? null : item.id;
-                    Character.updateLook();
-                    UI.toast("Giyildi!");
-                    return;
+                if(cat == 'clothes' && State.unlocked.includes(item.id)) {
+                    State.equipped[item.type] = (State.equipped[item.type]==item.id ? null : item.id);
+                    UI.applyLook(); return;
                 }
-
                 if(State.coins >= item.price) {
                     State.coins -= item.price;
-                    UI.renderStats();
-
-                    if(cat === 'food') {
-                        State.inventory.push(item.icon);
-                        UI.renderInventory();
-                        UI.toast("Leziz!");
-                    } else if (cat === 'clothes') {
-                        State.unlocked.push(item.id);
-                        Shop.render('clothes');
-                        UI.toast("Alındı!");
-                    } else if (cat === 'potion') {
-                        if(item.type === 'heal') {
-                            State.stats = {hunger:100, clean:100, energy:100, fun:100};
-                            UI.renderStats();
-                        } else if (item.type === 'color') {
-                            State.equipped.color = item.val;
-                            Character.updateLook();
-                        }
-                        UI.toast("Kullanıldı!");
+                    if(cat == 'food') { State.inventory.push(item.icon); UI.renderFood(); UI.toast("Leziz!"); }
+                    else if(cat == 'clothes') { State.unlocked.push(item.id); Shop.render(cat); UI.toast("Giyildi!"); }
+                    else if(cat == 'potions') {
+                        if(item.type=='heal') { State.stats.hunger=100; State.stats.clean=100; State.stats.energy=100; }
+                        else if(item.type=='color') { State.equipped.color = item.val; UI.applyLook(); }
+                        UI.toast("İçildi!");
                     }
-                } else {
-                    UI.toast("Para yetersiz!");
-                }
+                    UI.update();
+                } else UI.toast("Para Yetersiz!");
             }
         };
 
-        /* =========================================
-           LOGIC: MINI GAME (SKY JUMP)
-           ========================================= */
-        const MiniGames = {
-            active: false,
-            canvas: document.getElementById('game-canvas'),
-            ctx: document.getElementById('game-canvas').getContext('2d'),
-            score: 0,
-            player: {}, platforms: [], loopId: null,
-
-            start: () => {
-                MiniGames.active = true;
-                document.getElementById('modal-game').classList.add('active');
+        /* --- OYUNLAR (CANVAS) --- */
+        const Games = {
+            active: false, ctx: null, cvs: null, loop: null,
+            mode: '', score: 0, entities: [], player: {},
+            
+            start: (game) => {
+                Games.active = true; Games.mode = game; Games.score = 0; Games.entities = [];
+                const m = document.getElementById('modal-game'); m.style.display = 'block';
+                const cvs = document.getElementById('game-cvs');
+                cvs.width = window.innerWidth; cvs.height = window.innerHeight;
+                Games.cvs = cvs; Games.ctx = cvs.getContext('2d');
                 
-                const cvs = MiniGames.canvas;
-                cvs.width = cvs.offsetWidth;
-                cvs.height = cvs.offsetHeight;
-
-                MiniGames.score = 0;
-                MiniGames.player = { x: cvs.width/2, y: cvs.height-100, vy: -10, r: 15 };
-                MiniGames.platforms = [];
-                
-                for(let i=0; i<8; i++) {
-                    MiniGames.platforms.push({
-                        x: Math.random() * (cvs.width-60),
-                        y: cvs.height - (i*100), w: 60, h: 10
-                    });
+                // Oyun Başlangıç Ayarları
+                if(game == 'skyjump') {
+                    Games.player = { x: cvs.width/2, y: cvs.height-150, vy: -10, r: 15 };
+                    // Düzeltme: Ayağının altına platform koy
+                    Games.entities.push({x: cvs.width/2 - 30, y: cvs.height-50, w:60, h:10});
+                    for(let i=0; i<6; i++) Games.entities.push({x: Math.random()*(cvs.width-60), y:cvs.height - 150 - (i*120), w:60, h:10});
+                } 
+                else if(game == 'fooddrop') {
+                    Games.player = { x: cvs.width/2, y: cvs.height-80, w: 50, h: 50 };
                 }
-                
-                // Kontroller
-                cvs.onclick = () => MiniGames.player.vy = -12;
-                cvs.addEventListener('touchmove', e => {
+                else if(game == 'driver') {
+                    Games.player = { x: cvs.width/2, y: cvs.height-100, w: 40, h: 60 };
+                }
+
+                // Kontrol
+                cvs.onclick = () => { if(game=='skyjump') Games.player.vy = -12; };
+                cvs.ontouchmove = (e) => {
                     e.preventDefault();
-                    MiniGames.player.x = e.touches[0].clientX;
-                }, {passive:false});
+                    Games.player.x = e.touches[0].clientX;
+                };
 
-                MiniGames.loop();
+                Games.tick();
             },
-
             stop: () => {
-                MiniGames.active = false;
-                cancelAnimationFrame(MiniGames.loopId);
-                document.getElementById('modal-game').classList.remove('active');
-                if(MiniGames.score > 0) {
-                    const reward = Math.floor(MiniGames.score / 5);
-                    State.coins += reward;
-                    UI.toast(`Oyun Bitti! +${reward}💰`);
-                    UI.renderStats();
+                Games.active = false; cancelAnimationFrame(Games.loop);
+                document.getElementById('modal-game').style.display = 'none';
+                if(Games.score > 0) {
+                    const r = Math.ceil(Games.score / 10);
+                    State.coins += r; UI.toast(`Oyun Bitti! +${r} Altın`); UI.update();
                 }
             },
+            tick: () => {
+                if(!Games.active) return;
+                const c = Games.ctx, w = Games.cvs.width, h = Games.cvs.height, p = Games.player;
+                c.clearRect(0,0,w,h);
 
-            loop: () => {
-                if(!MiniGames.active) return;
-                const ctx = MiniGames.ctx;
-                const p = MiniGames.player;
-                const cvs = MiniGames.canvas;
-
-                // Logic
-                p.vy += 0.5;
-                p.y += p.vy;
-
-                // Kamera yukarı
-                if(p.y < cvs.height/2) {
-                    p.y = cvs.height/2;
-                    const diff = -p.vy;
-                    MiniGames.score += diff/10;
-                    MiniGames.platforms.forEach(pl => {
-                        pl.y += diff;
-                        if(pl.y > cvs.height) {
-                            pl.y = -20;
-                            pl.x = Math.random() * (cvs.width - 60);
-                        }
+                /* --- SKY JUMP --- */
+                if(Games.mode == 'skyjump') {
+                    p.vy += 0.4; p.y += p.vy;
+                    // Kamera Yukarı
+                    if(p.y < h/2) {
+                        p.y = h/2; let diff = -p.vy; Games.score += diff;
+                        Games.entities.forEach(e => {
+                            e.y += diff;
+                            if(e.y > h) { e.y = -20; e.x = Math.random()*(w-60); }
+                        });
+                    }
+                    // Platform Çarpışma
+                    if(p.vy > 0) Games.entities.forEach(e => {
+                        if(p.x > e.x-10 && p.x < e.x+e.w+10 && p.y+p.r > e.y && p.y+p.r < e.y+20) p.vy = -13;
                     });
+                    // Ölüm
+                    if(p.y > h) { Games.stop(); return; }
+                    
+                    // Çiz
+                    c.fillStyle = '#2ecc71'; Games.entities.forEach(e => c.fillRect(e.x, e.y, e.w, e.h));
+                    c.fillStyle = State.equipped.color; c.beginPath(); c.arc(p.x, p.y, p.r, 0, Math.PI*2); c.fill();
                 }
 
-                // Çarpışma
-                if(p.vy > 0) {
-                    MiniGames.platforms.forEach(pl => {
-                        if(p.x > pl.x && p.x < pl.x + pl.w && p.y + p.r > pl.y && p.y + p.r < pl.y + pl.h + 15) {
-                            p.vy = -12;
+                /* --- FOOD DROP --- */
+                else if(Games.mode == 'fooddrop') {
+                    if(Math.random() < 0.03) Games.entities.push({x:Math.random()*(w-30), y:-30, type:Math.random()>0.8?'💣':'🍎'});
+                    Games.entities.forEach((e, i) => {
+                        e.y += 5;
+                        c.font = "30px Arial"; c.fillText(e.type, e.x, e.y);
+                        // Çarpışma
+                        if(Math.hypot(p.x-e.x, p.y-e.y) < 40) {
+                            if(e.type=='💣') { Games.stop(); return; }
+                            Games.score += 10; Games.entities.splice(i,1);
                         }
                     });
+                    // Pou Çiz
+                    c.fillStyle = State.equipped.color; c.fillRect(p.x-25, p.y-25, 50, 50);
+                    // Gözler
+                    c.fillStyle='white'; c.fillRect(p.x-15, p.y-15, 10,10); c.fillRect(p.x+5, p.y-15, 10,10);
                 }
 
-                if(p.y > cvs.height) { MiniGames.stop(); return; }
+                /* --- DRIVER --- */
+                else if(Games.mode == 'driver') {
+                    Games.score += 1;
+                    if(Games.score % 20 == 0) Games.entities.push({x:Math.random()*(w-50), y:-50, w:50, h:80});
+                    Games.entities.forEach((e,i) => {
+                        e.y += 8;
+                        c.fillStyle = 'red'; c.fillRect(e.x, e.y, e.w, e.h);
+                        if(p.x < e.x + e.w && p.x + p.w > e.x && p.y < e.y + e.h && p.h + p.y > e.y) { Games.stop(); return; }
+                    });
+                    c.fillStyle = 'blue'; c.fillRect(p.x, p.y, p.w, p.h);
+                }
 
-                // Çizim
-                ctx.clearRect(0,0,cvs.width,cvs.height);
-                
-                ctx.fillStyle = '#00b894';
-                MiniGames.platforms.forEach(pl => ctx.fillRect(pl.x, pl.y, pl.w, pl.h));
-
-                ctx.fillStyle = State.equipped.color;
-                ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
-                
-                // Gözler
-                ctx.fillStyle = 'white';
-                ctx.beginPath(); ctx.arc(p.x-5, p.y-2, 5, 0, Math.PI*2); ctx.fill();
-                ctx.beginPath(); ctx.arc(p.x+5, p.y-2, 5, 0, Math.PI*2); ctx.fill();
-                ctx.fillStyle = 'black';
-                ctx.beginPath(); ctx.arc(p.x-5, p.y-2, 2, 0, Math.PI*2); ctx.fill();
-                ctx.beginPath(); ctx.arc(p.x+5, p.y-2, 2, 0, Math.PI*2); ctx.fill();
-
-                document.getElementById('game-score').innerText = Math.floor(MiniGames.score);
-                MiniGames.loopId = requestAnimationFrame(MiniGames.loop);
+                document.getElementById('game-score').innerText = Math.floor(Games.score);
+                Games.loop = requestAnimationFrame(Games.tick);
             }
         };
 
-        // Başlat
-        window.onload = Game.init;
-
+        window.onload = Main.init;
     </script>
 </body>
 </html>
